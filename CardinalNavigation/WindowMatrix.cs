@@ -16,10 +16,9 @@ namespace CardinalNavigation
     class WindowMatrix
     {
 
-        private List<GenericWindowFrame> m_IVsFrames = new List<GenericWindowFrame>();
+        private List<IVsFrame> m_IVsFrames = new List<IVsFrame>();
         private List<EnvDTE.Window> m_activeWindows = new List<EnvDTE.Window>();
         private EnvDTE.Window m_selectedWindow;
-
 
         public WindowMatrix(AsyncPackage package)
         {
@@ -31,13 +30,13 @@ namespace CardinalNavigation
         private void setActiveWindows(AsyncPackage package)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            DTE myDTE = CommonMethods.getDTE(package);
+            DTE myDTE = HelperMethods.getDTE(package);
             m_selectedWindow = myDTE.ActiveWindow;
             if (m_selectedWindow == null)
             {
                 ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
             }
-            m_activeWindows = CommonMethods.getLinkedWindowsList(m_selectedWindow.LinkedWindowFrame.LinkedWindows);
+            m_activeWindows = HelperMethods.getLinkedWindowsList(m_selectedWindow.LinkedWindowFrame.LinkedWindows);
         }
 
         /// <summary>
@@ -48,7 +47,7 @@ namespace CardinalNavigation
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            List<EnvDTE.Window> linkedWindows = CommonMethods.getLinkedWindowsList(window.LinkedWindows);
+            List<EnvDTE.Window> linkedWindows = HelperMethods.getLinkedWindowsList(window.LinkedWindows);
 
             foreach (var childWindow in linkedWindows)
             {
@@ -132,6 +131,7 @@ namespace CardinalNavigation
 
 
         }
+
         /// <summary>
         /// swap the current active window for the one found here
         /// or do nothing if none is found.
