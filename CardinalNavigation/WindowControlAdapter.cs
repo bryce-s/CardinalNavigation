@@ -1,5 +1,6 @@
 ﻿using EnvDTE;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Collections.Generic;
@@ -58,32 +59,36 @@ namespace CardinalNavigation
             }
 
             // check for duplicate names
-            if (genericWindows.Count != genericWindows.DistinctBy((genericWindow) => genericWindow.ToString()).ToList().Count ||
-                dteWindows.Count != dteWindows.DistinctBy((dteWindow) => dteWindow.ToString()).ToList().Count)
+            if (genericWindows.Count != genericWindows.DistinctBy(keySelector: (genericWindow) => genericWindow.getName()).ToList().Count ||
+                dteWindows.Count != dteWindows.DistinctBy(keySelector: (dteWindow) =>
+                {
+                    ThreadHelper.ThrowIfNotOnUIThread();
+                    return dteWindow.Caption;
+                }).ToList().Count)
             {
                 ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
             }
 
-            // what's a linguistically effcient way to find the intersection?
-            if (genericWindows.Intersect(dteWindows))
-
-
-            foreach (var genericWindow in genericWindows)
+            var intersection = genericWindows.Where(genericWindow =>
             {
-                ErrorHandler.ThrowOnFailure(
-                    filenames.Contains(genericWindow.ToString()) ? VSConstants.E_FAIL : VSConstants.S_OK
-                    );
-                filenames.Add(genericWindow.ToString());
+                var found = false;
+                foreach (var dteWindow in dteWindows)
+                {
+                    if (dteWindow.ToString() == genericWindow.ToString())
+                    {
+                        found = true;
+                    }
+                }
+                return found;
+            });
+
+            if (intersection.ToList().Count != genericWindows.Count)
+            {
+                ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
             }
 
-            foreach (var dteWindow in dteWindows)
-            {
-
-
-            }
-
-
-
+            genericWindows.Sort((lhsWindow, rhsWindow) => String.Compare(lhsWindow.ToString(), rhsWindow.ToString()));
+            dteWindows.Sort((lhsWindow, rhsWindow) => String.Compare(lhsWindow.ToString(), rhsWindow.ToString()));
 
             // todo: need logic to pair windows here, they won't necessarilyh be in the correct order.
             for (var i = 0; i < genericWindows.Count; i++)

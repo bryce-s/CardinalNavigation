@@ -70,6 +70,18 @@ namespace CardinalNavigation
             return pfOnScreen == 0;  
         }
 
+        /// <summary>
+        /// gets the name ('caption') of this window frame
+        /// </summary>
+        /// <returns></returns>
+        public string getName()
+        {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+            object name;
+            this.m_Frame.GetProperty((int)__VSFPROPID.VSFPROPID_Caption, out name);
+            return name.ToString();
+        }
+
         public int Show()
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();

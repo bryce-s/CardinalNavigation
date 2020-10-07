@@ -11,8 +11,7 @@ using System.Windows;
 
 namespace CardinalNavigation
 {
-    // do we want to make this stay in mem?
-    // probably not, we can only have a handful of windows open at once, no?
+    
     class WindowMatrix
     {
 
@@ -141,9 +140,8 @@ namespace CardinalNavigation
         {
 
             removePointsInWrongDirection(direction);
-
-
-
+            // remove non-adjacent
+            // select one 
         }
 
         /// <summary>
