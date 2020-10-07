@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,7 +12,7 @@ namespace CardinalNavigation
 {
     class WindowControlAdapter
     {
-        private IVsFrame m_genericWindow;
+        private GenericWindowFrame m_genericWindow;
         private Window m_dteWindow;
 
         private int m_Px, m_Py, m_Pcx, m_Pcy;
@@ -20,7 +21,7 @@ namespace CardinalNavigation
         private Window m_Parent;
 
 
-        WindowControlAdapter(IVsFrame genericWindow, Window dteWindow)
+        WindowControlAdapter(GenericWindowFrame genericWindow, Window dteWindow)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -41,18 +42,49 @@ namespace CardinalNavigation
 
         }
 
-        /// <summary>
+
+
+
         /// Returns an ienum to this class, bound to lists from the DTE and IVs shell api.
         /// </summary>
         /// <param name="genericWindows"></param>
         /// <param name="dteWindows"></param>
         /// <returns></returns>
-        public static IEnumerable<WindowControlAdapter> GetWindowControlAdapters(List<IVsFrame> genericWindows, List<Window> dteWindows)
+        public static IEnumerable<WindowControlAdapter> GetWindowControlAdapters(List<GenericWindowFrame> genericWindows, List<Window> dteWindows)
         {
             if (genericWindows?.Count != dteWindows?.Count || dteWindows?.Count == 0)
             {
                 ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
             }
+
+            // check for duplicate names
+            if (genericWindows.Count != genericWindows.DistinctBy((genericWindow) => genericWindow.ToString()).ToList().Count ||
+                dteWindows.Count != dteWindows.DistinctBy((dteWindow) => dteWindow.ToString()).ToList().Count)
+            {
+                ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
+            }
+
+            // what's a linguistically effcient way to find the intersection?
+            if (genericWindows.Intersect(dteWindows))
+
+
+            foreach (var genericWindow in genericWindows)
+            {
+                ErrorHandler.ThrowOnFailure(
+                    filenames.Contains(genericWindow.ToString()) ? VSConstants.E_FAIL : VSConstants.S_OK
+                    );
+                filenames.Add(genericWindow.ToString());
+            }
+
+            foreach (var dteWindow in dteWindows)
+            {
+
+
+            }
+
+
+
+
             // todo: need logic to pair windows here, they won't necessarilyh be in the correct order.
             for (var i = 0; i < genericWindows.Count; i++)
             {

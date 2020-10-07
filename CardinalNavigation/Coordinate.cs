@@ -13,7 +13,7 @@ namespace CardinalNavigation
         public int width;
         public int height;
 
-        Coordinate(int x_in, int y_in, int width_in, int height_in)
+        public Coordinate(int x_in, int y_in, int width_in, int height_in)
         {
             x = x_in;
             y = y_in;

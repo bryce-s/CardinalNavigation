@@ -16,8 +16,9 @@ namespace CardinalNavigation
     class WindowMatrix
     {
 
-        private List<IVsFrame> m_IVsFrames = new List<IVsFrame>();
-        private List<EnvDTE.Window> m_activeWindows = new List<EnvDTE.Window>();
+        List<WindowControlAdapter> m_windows;
+        private List<GenericWindowFrame> m_IVsFrames;
+        private List<EnvDTE.Window> m_activeWindows;
         private EnvDTE.Window m_selectedWindow;
 
         public WindowMatrix(AsyncPackage package)
@@ -25,6 +26,11 @@ namespace CardinalNavigation
             ThreadHelper.ThrowIfNotOnUIThread();
             this.setActiveWindows(package);
             m_IVsFrames = IVsUIWindowFrameExtractor.getIVsWindowFramesEnumerator(package);
+            var controlAdapters = WindowControlAdapter.GetWindowControlAdapters(m_IVsFrames, m_activeWindows);
+            foreach (var window in controlAdapters)
+            {
+                Console.WriteLine("window");
+            }
         }
 
         private void setActiveWindows(AsyncPackage package)
@@ -69,16 +75,12 @@ namespace CardinalNavigation
             }
         }
 
-        /// <summary>
-        /// Remove all points in the wrong direction, or that aren't bordering out
-        /// active window.
-        /// </summary>
-        /// <param name="direction"></param>
-        private void removeIneligiblePoints(char direction)
+
+        private void removePointsInWrongDirection(char direction)
         {
-            Func<EnvDTE.Window, bool> del = (win) => { 
-               return false; 
-           };
+            Func<EnvDTE.Window, bool> filterFunction = (win) => {
+                return false;
+            };
 
             // we need to eliminate docked, invis wins before this point.
 
@@ -88,7 +90,7 @@ namespace CardinalNavigation
                 // i should think nah, only if it's 'straight'above you. 
                 // we'd need to calc if it is, but this'd also be an issue with all other transfers.
 
-                del = (win) => { 
+                filterFunction = (win) => {
 
                     ThreadHelper.ThrowIfNotOnUIThread();
                     // win.Top should be of a higher priority than m_seletedWindow.Top; since
@@ -99,7 +101,7 @@ namespace CardinalNavigation
             }
             else if (direction == Constants.DOWN)
             {
-                del = (win) =>
+                filterFunction = (win) =>
                 {
                     ThreadHelper.ThrowIfNotOnUIThread();
                     // weird but main editor's 1 higher by default
@@ -108,7 +110,7 @@ namespace CardinalNavigation
             }
             else if (direction == Constants.LEFT)
             {
-                del = (win) =>
+                filterFunction = (win) =>
                 {
                     ThreadHelper.ThrowIfNotOnUIThread();
                     return win.Left < m_selectedWindow.Left;
@@ -116,17 +118,29 @@ namespace CardinalNavigation
             }
             else if (direction == Constants.RIGHT)
             {
-                del = (win) =>
+                filterFunction = (win) =>
                 {
                     ThreadHelper.ThrowIfNotOnUIThread();
                     return win.Left > m_selectedWindow.Left;
                 };
             }
 
-            m_activeWindows = m_activeWindows.Where(del)
+            m_activeWindows = m_activeWindows.Where(filterFunction)
                                              .ToList();
             // can't activate here
             // need to find adjacent windows
+
+        }
+
+        /// <summary>
+        /// Remove all points in the wrong direction, or that aren't bordering out
+        /// active window.
+        /// </summary>
+        /// <param name="direction"></param>
+        private void removeIneligiblePoints(char direction)
+        {
+
+            removePointsInWrongDirection(direction);
 
 
 

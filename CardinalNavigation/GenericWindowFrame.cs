@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace CardinalNavigation
 {
     /// <summary>
-    ///  container implementation to dynamically allocate both toolbox and document
+    ///  container to dynamically allocate both toolbox and document
     ///  frames.
     /// </summary>
     class GenericWindowFrame : IVsWindowFrame4, IVsWindowFrame, IVsWindowFrameNotify
