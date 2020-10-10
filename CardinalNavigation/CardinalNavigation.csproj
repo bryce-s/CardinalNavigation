@@ -49,7 +49,7 @@
     <Compile Include="HelperMethods.cs" />
     <Compile Include="Command1.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="GenericWindowFrame.cs" />
+    <Compile Include="IVsFrameView.cs" />
     <Compile Include="IVsUIWindowFrameExtractor.cs" />
     <Compile Include="LinqExtensionMethods.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

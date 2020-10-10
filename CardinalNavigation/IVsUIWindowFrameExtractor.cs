@@ -15,7 +15,7 @@ namespace CardinalNavigation
     {
 
 
-        private static IEnumerable<GenericWindowFrame> extractFrames(IEnumWindowFrames frames)
+        private static IEnumerable<IVsFrameView> extractFrames(IEnumWindowFrames frames)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -37,7 +37,7 @@ namespace CardinalNavigation
                     var isVisible = frame[0].IsVisible();
                     int onScreen;
                     var isOnScreen = frame[0].IsOnScreen(out onScreen);
-                    yield return new GenericWindowFrame(frame[0]);
+                    yield return new IVsFrameView(frame[0]);
                 }
             }
         }
@@ -48,12 +48,12 @@ namespace CardinalNavigation
         /// </summary>
         /// <param name="package"></param>
         /// <returns></returns>
-        public static List<GenericWindowFrame>getIVsWindowFramesEnumerator(AsyncPackage package)
+        public static List<IVsFrameView>getIVsWindowFramesEnumerator(AsyncPackage package)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             IVsUIShell uiShell = HelperMethods.getIVsUIShell(package);
-            List<GenericWindowFrame> genericFrames = new List<GenericWindowFrame>();
+            List<IVsFrameView> genericFrames = new List<IVsFrameView>();
 
 
             IEnumWindowFrames toolFramesEnum;

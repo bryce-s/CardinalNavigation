@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -15,33 +16,36 @@ namespace CardinalNavigation
     class WindowMatrix
     {
 
-        List<WindowControlAdapter> m_windows;
-        private List<GenericWindowFrame> m_IVsFrames;
-        private List<EnvDTE.Window> m_activeWindows;
-        private EnvDTE.Window m_selectedWindow;
+        private List<IVsFrameView> m_IVsFrames;
+        private List<EnvDTE.Window> m_LinkedDTEWindows;
+
+        private List<WindowControlAdapter> m_ActiveWindows;
+
+        private WindowControlAdapter m_activeWindow;
 
         public WindowMatrix(AsyncPackage package)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             this.setActiveWindows(package);
             m_IVsFrames = IVsUIWindowFrameExtractor.getIVsWindowFramesEnumerator(package);
-            var controlAdapters = WindowControlAdapter.GetWindowControlAdapters(m_IVsFrames, m_activeWindows);
-            foreach (var window in controlAdapters)
-            {
-                Console.WriteLine("window");
-            }
+
+            DTE myDTE = HelperMethods.getDTE(package);
+
+            m_ActiveWindows = WindowControlAdapter.getLinkedWindowControlAdapters(m_IVsFrames, m_LinkedDTEWindows, myDTE.ActiveWindow).ToList();
+            m_activeWindow = WindowControlAdapter.getActiveWindowControlAdapter(myDTE.ActiveWindow, m_ActiveWindows);
         }
+
 
         private void setActiveWindows(AsyncPackage package)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             DTE myDTE = HelperMethods.getDTE(package);
-            m_selectedWindow = myDTE.ActiveWindow;
-            if (m_selectedWindow == null)
+            if (m_activeWindow == null)
             {
                 ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
             }
-            m_activeWindows = HelperMethods.getLinkedWindowsList(m_selectedWindow.LinkedWindowFrame.LinkedWindows);
+            m_LinkedDTEWindows = HelperMethods.getLinkedWindowsList(myDTE.ActiveWindow.LinkedWindowFrame.LinkedWindows);
+
         }
 
         /// <summary>
@@ -95,7 +99,7 @@ namespace CardinalNavigation
                     // win.Top should be of a higher priority than m_seletedWindow.Top; since
                     // closer to top of IDE is lower no, the 'higher priority' here is 
                     // a lower number
-                    return win.Top < m_selectedWindow.Top;
+                    return win.Top < m_activeWindow.getScreenDisplayCoordinates().y;
                 };
             }
             else if (direction == Constants.DOWN)
@@ -104,7 +108,7 @@ namespace CardinalNavigation
                 {
                     ThreadHelper.ThrowIfNotOnUIThread();
                     // weird but main editor's 1 higher by default
-                    return win.Top - m_selectedWindow.Top > 1;
+                    return win.Top - m_activeWindow.getScreenDisplayCoordinates().y > 1;
                 };
             }
             else if (direction == Constants.LEFT)
@@ -112,7 +116,7 @@ namespace CardinalNavigation
                 filterFunction = (win) =>
                 {
                     ThreadHelper.ThrowIfNotOnUIThread();
-                    return win.Left < m_selectedWindow.Left;
+                    return win.Left < m_activeWindow.getScreenDisplayCoordinates().x;
                 };
             }
             else if (direction == Constants.RIGHT)
@@ -120,11 +124,11 @@ namespace CardinalNavigation
                 filterFunction = (win) =>
                 {
                     ThreadHelper.ThrowIfNotOnUIThread();
-                    return win.Left > m_selectedWindow.Left;
+                    return win.Left > m_activeWindow.getScreenDisplayCoordinates().x;
                 };
             }
 
-            m_activeWindows = m_activeWindows.Where(filterFunction)
+            m_LinkedDTEWindows = m_LinkedDTEWindows.Where(filterFunction)
                                              .ToList();
             // can't activate here
             // need to find adjacent windows

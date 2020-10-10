@@ -102,6 +102,11 @@ namespace CardinalNavigation
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            if (windows == null)
+            {
+                throw new NullReferenceException();
+            }
+
             List<EnvDTE.Window> linkedWindows = new List<EnvDTE.Window>();
 
             foreach(var window in windows)

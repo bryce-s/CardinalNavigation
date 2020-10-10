@@ -104,7 +104,7 @@ namespace CardinalNavigation
 
             //IVsUIShell svui = (IVsUIShell)serviceProvider.GetService(typeof(SVsUIShell));
             //IEnumWindowFrames test;
-            //int ok1 = svui.GetToolWindowEnum(out test);
+            //int ok1 = svui.GetToolWindowE,d,um(out test);
             //if (ok1 != VSConstants.S_OK)
             //{
             //    //do error things
