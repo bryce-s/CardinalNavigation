@@ -147,7 +147,7 @@ namespace CardinalNavigation
 
 
             WindowMatrix windowMatrix = new WindowMatrix(package);
-            windowMatrix.navigateInDirection(CardinalNavigationConstants.DOWN);
+            windowMatrix.navigateInDirection(CardinalNavigationConstants.LEFT);
             // seems like Windows only registers those we've opened in this session..
             // windowMatrix.addWindows(myDTE.Windows);
 

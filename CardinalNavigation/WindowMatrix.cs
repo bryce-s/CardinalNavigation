@@ -85,34 +85,38 @@ namespace CardinalNavigation
 
         private void sortByLargestAdjacency(char direction)
         {
-            // could just take max, but might be useful to have this sorted.
-            if (direction == CardinalNavigationConstants.UP)
+            // we don't want max exactly..
+            // don't use Abs; c# sort compares based on numeric result 
+            if (direction == CardinalNavigationConstants.UP || direction == CardinalNavigationConstants.DOWN)
             {
-                m_ActiveWindows.Sort((lhsWindow, rhsWindow) => { return 1; });
-
-            }
-            else if (direction == CardinalNavigationConstants.DOWN)
-            {
-                m_ActiveWindows.Sort((lhsWindow, rhsWindow) => {
+                m_ActiveWindows.Sort((lhsWindow, rhsWindow) =>
+                {
                     var activeX = m_activeWindow.coordinates.x;
                     var activeWidth = m_activeWindow.coordinates.width;
                     var lhsX = lhsWindow.coordinates.x;
-                    var lhsWidth = lhsWindow.coordinates.y;
+                    var lhsWidth = lhsWindow.coordinates.width;
                     var rhsX = rhsWindow.coordinates.x;
-                    var rhsWidth = rhsWindow.coordinates.y;
+                    var rhsWidth = rhsWindow.coordinates.width;
                     var lhsAdjacencySize = AdjacencySize(activeX, activeWidth, lhsX, lhsWidth);
                     var rhsAdjacencySize = AdjacencySize(activeX, activeWidth, rhsX, rhsWidth);
                     return (lhsAdjacencySize - rhsAdjacencySize);
                 });
-
             }
-            else if (direction == CardinalNavigationConstants.LEFT)
+            else if (direction == CardinalNavigationConstants.LEFT || direction == CardinalNavigationConstants.RIGHT)
             {
-                
-            }
-            else if (direction == CardinalNavigationConstants.RIGHT)
-            {
-
+                m_ActiveWindows.Sort((lhsWindow, rhsWindow) =>
+                {
+                    var activeY = m_activeWindow.coordinates.y;
+                    var activeHeight = m_activeWindow.coordinates.height;
+                    var lhsY = lhsWindow.coordinates.y;
+                    var lhsHeight = lhsWindow.coordinates.height;
+                    var rhsY = rhsWindow.coordinates.y;
+                    var rhsHeight = rhsWindow.coordinates.height;
+                    var lhsAdjacencySize = AdjacencySize(activeY, activeHeight, lhsY, lhsHeight);
+                    var rhsAdjacencySize = AdjacencySize(activeY, activeHeight, rhsY, rhsHeight);
+                    return (lhsAdjacencySize - rhsAdjacencySize);
+                    
+                });
             }
 
             m_ActiveWindows.Reverse();
@@ -128,69 +132,78 @@ namespace CardinalNavigation
                 return false;
             };
 
-            if (direction == CardinalNavigationConstants.UP)
+            if (direction == CardinalNavigationConstants.UP || direction == CardinalNavigationConstants.DOWN)
             {
-            }
-            else if (direction == CardinalNavigationConstants.DOWN)
-            {
-                // var c = Enumerable.Range(9, 22).Count();
-
                 filterFunction = (win) =>
                 {
                     var activeX = m_activeWindow.coordinates.x;
                     var activeXWidth = m_activeWindow.coordinates.width;
                     var winX = win.coordinates.x;
                     var winWidth = win.coordinates.width;
-                    return ((winX >= activeX && winX <= activeXWidth+activeX) || ((winX+winWidth >= activeX) && (winX+winWidth <= activeXWidth+activeX)));
-
-
+                    return ((winX >= activeX && winX <= activeXWidth + activeX) ||
+                    ((winX + winWidth >= activeX) && (winX + winWidth <= activeXWidth+activeX)));
                 };
-
             }
-            else if (direction == CardinalNavigationConstants.LEFT)
+            else if (direction == CardinalNavigationConstants.LEFT || direction == CardinalNavigationConstants.RIGHT)
             {
-
-            }
-            else if (direction == CardinalNavigationConstants.RIGHT)
-            {
+                filterFunction = (win) =>
+                {
+                    var activeY = m_activeWindow.coordinates.y;
+                    var activeYHeight = m_activeWindow.coordinates.height;
+                    var winY = m_activeWindow.coordinates.y;
+                    var winHeight = m_activeWindow.coordinates.height;
+                    return ((winY >= activeY && winY <= activeYHeight + activeY) ||
+                    (winY + winHeight >= winY) && (winY + winHeight <= activeYHeight + activeY));
+                };
 
             }
 
             m_ActiveWindows = m_ActiveWindows.Where(filterFunction).ToList();
+
         }
 
         private void removeWindowsNotAdjacent(char direction)
         {
+            //todo: should not need abs
             Func<WindowControlAdapter, bool> filterFunction = (win) =>
             {
                 return false;
             };
             if (direction == CardinalNavigationConstants.UP)
             {
-                
+                filterFunction = (win) =>
+                {
+                    return Math.Abs((win.coordinates.y + win.coordinates.height) - m_activeWindow.coordinates.y) < m_YDivide;
+                };
             }
             else if (direction == CardinalNavigationConstants.DOWN)
             {
                 filterFunction = (win) =>
                 {
-                    return win.coordinates.y - (m_activeWindow.coordinates.y + m_activeWindow.coordinates.height) < m_YDivide;
+                    return Math.Abs(win.coordinates.y - (m_activeWindow.coordinates.y + m_activeWindow.coordinates.height)) < m_YDivide;
                 };
-                
             }
             else if (direction == CardinalNavigationConstants.LEFT)
             {
+                filterFunction = (win) =>
+                {
+                    return Math.Abs((win.coordinates.x + win.coordinates.width) - m_activeWindow.coordinates.x) < m_XDivide;
+                };
 
             }
             else if (direction == CardinalNavigationConstants.RIGHT)
             {
-
+                filterFunction = (win) =>
+                {
+                    return Math.Abs((win.coordinates.x) - (m_activeWindow.coordinates.x + m_activeWindow.coordinates.width)) < m_XDivide;
+                };
             }
 
             m_ActiveWindows = m_ActiveWindows.Where(filterFunction).ToList();
 
         }
 
-        private void removePointsInWrongDirection(char direction)
+        private void removeWindowsInWrongDirection(char direction)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             Func<WindowControlAdapter, bool> filterFunction = (win) => {
@@ -244,7 +257,17 @@ namespace CardinalNavigation
                                              .ToList();
             // can't activate here
             // need to find adjacent windows
+        }
 
+        private void removeHiddenOrTabbedWindows()
+        {
+            m_ActiveWindows = m_ActiveWindows.Where((window) =>
+            {
+                return window.coordinates.x == 0 &&
+                window.coordinates.y == 0 &&
+                window.coordinates.width == 0 &&
+                window.coordinates.height == 0;
+            }).ToList();
         }
 
         /// <summary>
@@ -252,11 +275,12 @@ namespace CardinalNavigation
         /// active window.
         /// </summary>
         /// <param name="direction"></param>
-        private void removeIneligiblePoints(char direction)
+        private void selectWindow(char direction)
         {
 
             ThreadHelper.ThrowIfNotOnUIThread();
-            removePointsInWrongDirection(direction);
+            removeHiddenOrTabbedWindows();
+            removeWindowsInWrongDirection(direction);
             removeWindowsNotAdjacent(direction);
             removeWindowsNotAligned(direction);
             sortByLargestAdjacency(direction);
@@ -275,7 +299,7 @@ namespace CardinalNavigation
         public void navigateInDirection(char direction)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            removeIneligiblePoints(direction);
+            selectWindow(direction);
         }
 
 
