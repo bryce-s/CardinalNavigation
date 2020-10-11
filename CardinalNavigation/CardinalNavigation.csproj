@@ -48,7 +48,7 @@
     <Compile Include="Coordinate.cs" />
     <Compile Include="HelperMethods.cs" />
     <Compile Include="Command1.cs" />
-    <Compile Include="Constants.cs" />
+    <Compile Include="CardinalNavigationConstants.cs" />
     <Compile Include="IVsFrameView.cs" />
     <Compile Include="IVsUIWindowFrameExtractor.cs" />
     <Compile Include="LinqExtensionMethods.cs" />
@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Design" />

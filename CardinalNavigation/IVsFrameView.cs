@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace CardinalNavigation
 {
     /// <summary>
-    ///  container to dynamically allocate both toolbox and document
+    ///  container needed to allocate both toolbox and document
     ///  frames.
     /// </summary>
     class IVsFrameView : IVsWindowFrame4, IVsWindowFrame, IVsWindowFrameNotify
@@ -74,7 +74,7 @@ namespace CardinalNavigation
         /// gets the name ('caption') of this window frame
         /// </summary>
         /// <returns></returns>
-        public string getName()
+        public string GetWindowName()
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
             object name;

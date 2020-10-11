@@ -1,7 +1,9 @@
 ﻿using EnvDTE;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Debugger;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +25,16 @@ namespace CardinalNavigation
 
         private WindowControlAdapter m_activeWindow;
 
+        private double m_DeviceDpiX;
+        private double m_DeviceDpiY;
+
+        private double m_DpiXScale;
+        private double m_DpiYScale;
+
+        private double m_XDivide;
+        private double m_YDivide;
+
+
         public WindowMatrix(AsyncPackage package)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -31,63 +43,163 @@ namespace CardinalNavigation
 
             DTE myDTE = HelperMethods.getDTE(package);
 
+            setWindowSelectionData();
+
             m_ActiveWindows = WindowControlAdapter.getLinkedWindowControlAdapters(m_IVsFrames, m_LinkedDTEWindows, myDTE.ActiveWindow).ToList();
             m_activeWindow = WindowControlAdapter.getActiveWindowControlAdapter(myDTE.ActiveWindow, m_ActiveWindows);
         }
 
+        // note; need to test SystemDpi from hdpi monitors 
+        private void setWindowSelectionData()
+        {
+
+            m_DeviceDpiX = DpiAwareness.SystemDpiX;
+            m_DeviceDpiY = DpiAwareness.SystemDpiY;
+            m_DpiXScale = m_DeviceDpiX / DpiAwareness.DefaultLogicalDpi;
+            m_DpiYScale = m_DeviceDpiY / DpiAwareness.DefaultLogicalDpi;
+
+            m_XDivide = CardinalNavigationConstants.DefaultLogicalXWindowDivide * m_DpiYScale;
+            m_YDivide = CardinalNavigationConstants.DefaultLogicalTabPaneDivide * m_DpiYScale;
+
+            // increase by scale factor to be safe
+            m_XDivide *= CardinalNavigationConstants.DefaultLogicalSelectorScale;
+            m_YDivide *= CardinalNavigationConstants.DefaultLogicalSelectorScale;
+
+            var awarenessContext = DpiAwareness.ProcessDpiAwarenessContext;
+        }
 
         private void setActiveWindows(AsyncPackage package)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             DTE myDTE = HelperMethods.getDTE(package);
-            if (m_activeWindow == null)
-            {
-                ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
-            }
             m_LinkedDTEWindows = HelperMethods.getLinkedWindowsList(myDTE.ActiveWindow.LinkedWindowFrame.LinkedWindows);
-
         }
 
-        /// <summary>
-        /// register the currently active windows so that we may switch between them.
-        /// </summary>
-        /// <param name="windows"></param>
-        private void addWindows(EnvDTE.Window window)
+
+        private static int AdjacencySize(int activeAxis, int activeHeightOrWidth, int windowAxis, int windowHeightOrWidth)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            return System.Linq.Enumerable.Range(activeAxis, activeAxis+activeHeightOrWidth).Intersect(
+                System.Linq.Enumerable.Range(windowAxis, windowAxis + windowHeightOrWidth)
+                ).Count();
+        }
 
-            List<EnvDTE.Window> linkedWindows = HelperMethods.getLinkedWindowsList(window.LinkedWindows);
-
-            foreach (var childWindow in linkedWindows)
+        private void sortByLargestAdjacency(char direction)
+        {
+            // could just take max, but might be useful to have this sorted.
+            if (direction == CardinalNavigationConstants.UP)
             {
-                Console.WriteLine("window!");
-                var left = childWindow.Left;
-                var top = childWindow.Top;
-                var width = childWindow.Width;
-                var height = childWindow.Height;
-                var isFloating = childWindow.IsFloating;
+                m_ActiveWindows.Sort((lhsWindow, rhsWindow) => { return 1; });
 
-                // i suspect this is 'sub-windows'
-                // it should be? but doesn't work? hmm...
-                var linkedWindowFrame = childWindow.LinkedWindowFrame;
-                var visible = linkedWindowFrame.Visible;
+            }
+            else if (direction == CardinalNavigationConstants.DOWN)
+            {
+                m_ActiveWindows.Sort((lhsWindow, rhsWindow) => {
+                    var activeX = m_activeWindow.coordinates.x;
+                    var activeWidth = m_activeWindow.coordinates.width;
+                    var lhsX = lhsWindow.coordinates.x;
+                    var lhsWidth = lhsWindow.coordinates.y;
+                    var rhsX = rhsWindow.coordinates.x;
+                    var rhsWidth = rhsWindow.coordinates.y;
+                    var lhsAdjacencySize = AdjacencySize(activeX, activeWidth, lhsX, lhsWidth);
+                    var rhsAdjacencySize = AdjacencySize(activeX, activeWidth, rhsX, rhsWidth);
+                    return (lhsAdjacencySize - rhsAdjacencySize);
+                });
 
-                var tabbedType = EnvDTE.vsLinkedWindowType.vsLinkedWindowTypeTabbed;
-                var dockedType = EnvDTE.vsLinkedWindowType.vsLinkedWindowTypeDocked;
+            }
+            else if (direction == CardinalNavigationConstants.LEFT)
+            {
                 
             }
+            else if (direction == CardinalNavigationConstants.RIGHT)
+            {
+
+            }
+
+            m_ActiveWindows.Reverse();
+
         }
 
+
+        // pick top enumerable.range() to find the size of ranges while tiebreaking
+        private void removeWindowsNotAligned(char direction)
+        {    
+            Func<WindowControlAdapter, bool> filterFunction = (win) =>
+            {
+                return false;
+            };
+
+            if (direction == CardinalNavigationConstants.UP)
+            {
+            }
+            else if (direction == CardinalNavigationConstants.DOWN)
+            {
+                // var c = Enumerable.Range(9, 22).Count();
+
+                filterFunction = (win) =>
+                {
+                    var activeX = m_activeWindow.coordinates.x;
+                    var activeXWidth = m_activeWindow.coordinates.width;
+                    var winX = win.coordinates.x;
+                    var winWidth = win.coordinates.width;
+                    return ((winX >= activeX && winX <= activeXWidth+activeX) || ((winX+winWidth >= activeX) && (winX+winWidth <= activeXWidth+activeX)));
+
+
+                };
+
+            }
+            else if (direction == CardinalNavigationConstants.LEFT)
+            {
+
+            }
+            else if (direction == CardinalNavigationConstants.RIGHT)
+            {
+
+            }
+
+            m_ActiveWindows = m_ActiveWindows.Where(filterFunction).ToList();
+        }
+
+        private void removeWindowsNotAdjacent(char direction)
+        {
+            Func<WindowControlAdapter, bool> filterFunction = (win) =>
+            {
+                return false;
+            };
+            if (direction == CardinalNavigationConstants.UP)
+            {
+                
+            }
+            else if (direction == CardinalNavigationConstants.DOWN)
+            {
+                filterFunction = (win) =>
+                {
+                    return win.coordinates.y - (m_activeWindow.coordinates.y + m_activeWindow.coordinates.height) < m_YDivide;
+                };
+                
+            }
+            else if (direction == CardinalNavigationConstants.LEFT)
+            {
+
+            }
+            else if (direction == CardinalNavigationConstants.RIGHT)
+            {
+
+            }
+
+            m_ActiveWindows = m_ActiveWindows.Where(filterFunction).ToList();
+
+        }
 
         private void removePointsInWrongDirection(char direction)
         {
-            Func<EnvDTE.Window, bool> filterFunction = (win) => {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            Func<WindowControlAdapter, bool> filterFunction = (win) => {
                 return false;
             };
 
             // we need to eliminate docked, invis wins before this point.
 
-            if (direction == Constants.UP)
+            if (direction == CardinalNavigationConstants.UP)
             {
                 // do we want to jump 'across' the screen or no?
                 // i should think nah, only if it's 'straight'above you. 
@@ -99,36 +211,36 @@ namespace CardinalNavigation
                     // win.Top should be of a higher priority than m_seletedWindow.Top; since
                     // closer to top of IDE is lower no, the 'higher priority' here is 
                     // a lower number
-                    return win.Top < m_activeWindow.getScreenDisplayCoordinates().y;
+                    return win.coordinates.y < m_activeWindow.coordinates.y;
                 };
             }
-            else if (direction == Constants.DOWN)
+            else if (direction == CardinalNavigationConstants.DOWN)
             {
                 filterFunction = (win) =>
                 {
                     ThreadHelper.ThrowIfNotOnUIThread();
                     // weird but main editor's 1 higher by default
-                    return win.Top - m_activeWindow.getScreenDisplayCoordinates().y > 1;
+                    return win.coordinates.y- m_activeWindow.coordinates.y > 1;
                 };
             }
-            else if (direction == Constants.LEFT)
+            else if (direction == CardinalNavigationConstants.LEFT)
             {
                 filterFunction = (win) =>
                 {
                     ThreadHelper.ThrowIfNotOnUIThread();
-                    return win.Left < m_activeWindow.getScreenDisplayCoordinates().x;
+                    return win.coordinates.x < m_activeWindow.coordinates.x;
                 };
             }
-            else if (direction == Constants.RIGHT)
+            else if (direction == CardinalNavigationConstants.RIGHT)
             {
                 filterFunction = (win) =>
                 {
                     ThreadHelper.ThrowIfNotOnUIThread();
-                    return win.Left > m_activeWindow.getScreenDisplayCoordinates().x;
+                    return win.coordinates.x > m_activeWindow.coordinates.x;
                 };
             }
 
-            m_LinkedDTEWindows = m_LinkedDTEWindows.Where(filterFunction)
+            m_ActiveWindows = m_ActiveWindows.Where(filterFunction)
                                              .ToList();
             // can't activate here
             // need to find adjacent windows
@@ -143,9 +255,16 @@ namespace CardinalNavigation
         private void removeIneligiblePoints(char direction)
         {
 
+            ThreadHelper.ThrowIfNotOnUIThread();
             removePointsInWrongDirection(direction);
-            // remove non-adjacent
-            // select one 
+            removeWindowsNotAdjacent(direction);
+            removeWindowsNotAligned(direction);
+            sortByLargestAdjacency(direction);
+            if (m_ActiveWindows.Count == 0)
+            {
+                return;
+            }
+            m_ActiveWindows.First().ActivateWindow();
         }
 
         /// <summary>
@@ -159,8 +278,9 @@ namespace CardinalNavigation
             removeIneligiblePoints(direction);
         }
 
+
         /// <summary>
-        /// activate the window passed as a param
+        /// activate the window passed as a para
         /// </summary>
         /// <param name="window"></param>
         private void activateWindow(EnvDTE.Window window)
@@ -171,3 +291,4 @@ namespace CardinalNavigation
 
     }
 }
+

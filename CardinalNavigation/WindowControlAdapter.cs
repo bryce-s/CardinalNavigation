@@ -21,6 +21,14 @@ namespace CardinalNavigation
 
         private Window m_Parent;
 
+        public Coordinate coordinates
+        {
+            get
+            {
+                return this.GetScreenDisplayCoordinates();
+            }
+        }
+
 
         WindowControlAdapter(IVsFrameView genericWindow, Window dteWindow)
         {
@@ -30,10 +38,11 @@ namespace CardinalNavigation
             {
                 ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
             }
+
             m_genericWindow = genericWindow;
             m_dteWindow = dteWindow;
 
-            m_genericWindow.GetWindowScreenRect(out m_screenLeft, out m_screenTop, out m_screenWidth, out m_screenHeight);
+            GetWindowScreenCoordinates();
 
             Guid relativeTo;
             var framePos = new VSSETFRAMEPOS[1];
@@ -41,6 +50,12 @@ namespace CardinalNavigation
 
             m_Parent = m_dteWindow.LinkedWindowFrame;
 
+        }
+
+        private void GetWindowScreenCoordinates()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            m_genericWindow.GetWindowScreenRect(out m_screenLeft, out m_screenTop, out m_screenWidth, out m_screenHeight);
         }
 
         
@@ -97,13 +112,14 @@ namespace CardinalNavigation
         /// <returns></returns>
         public static IEnumerable<WindowControlAdapter> GetWindowControlAdapters(List<IVsFrameView> genericWindows, List<Window> dteWindows)
         {
+           
             if (genericWindows?.Count != dteWindows?.Count || dteWindows?.Count == 0)
             {
                 ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
             }
 
             // check for duplicate names
-            if (genericWindows.Count != genericWindows.DistinctBy(keySelector: (genericWindow) => genericWindow.getName()).ToList().Count ||
+            if (genericWindows.Count != genericWindows.DistinctBy(keySelector: (genericWindow) => genericWindow.GetWindowName()).ToList().Count ||
                 dteWindows.Count != dteWindows.DistinctBy(keySelector: (dteWindow) =>
                 {
                     ThreadHelper.ThrowIfNotOnUIThread();
@@ -119,7 +135,7 @@ namespace CardinalNavigation
                 var found = false;
                 foreach (var dteWindow in dteWindows)
                 {
-                    if (dteWindow.Caption == genericWindow.getName())
+                    if (dteWindow.Caption == genericWindow.GetWindowName())
                     {
                         found = true;
                     }
@@ -132,10 +148,13 @@ namespace CardinalNavigation
                 ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
             }
 
-            genericWindows.Sort((lhsWindow, rhsWindow) => String.Compare(lhsWindow.ToString(), rhsWindow.ToString()));
-            dteWindows.Sort((lhsWindow, rhsWindow) => String.Compare(lhsWindow.ToString(), rhsWindow.ToString()));
+            genericWindows.Sort((lhsWindow, rhsWindow) => String.Compare(lhsWindow.GetWindowName(), rhsWindow.GetWindowName()));
+            dteWindows.Sort((lhsWindow, rhsWindow) => {
+                ThreadHelper.ThrowIfNotOnUIThread();
+                return String.Compare(lhsWindow.Caption, rhsWindow.Caption);
+            }
+            );
 
-            // todo: need logic to pair windows here, they won't necessarilyh be in the correct order.
             for (var i = 0; i < genericWindows.Count; i++)
             {
                 yield return new WindowControlAdapter(genericWindows[i], dteWindows[i]);
@@ -150,7 +169,7 @@ namespace CardinalNavigation
         public string getWindowName()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            return m_dteWindow.Caption;
+            return m_genericWindow.GetWindowName();
         }
 
         /// <summary>
@@ -158,31 +177,40 @@ namespace CardinalNavigation
         /// false if docked, minimized, etc.
         /// </summary>
         /// <returns></returns>
-        public bool eligibleForSelection()
+        public bool EligibleForActiviation()
         {
-            // need the parent IVsFrame also.
-            return true;
+            return m_screenWidth == 0 && m_screenHeight == 0 && m_screenLeft == 0 && m_screenTop == 0; 
         }
 
         // return is floating
 
         // return coordinates of parent window
+        public Coordinate GetParentWindowDisplayCoordinates()
+        {
+            // if window floating return dte top and left
+            // else return dte parent top and left
+            throw new NotImplementedException();
+            return new Coordinate(0,0,0,0);
+        }
 
         /// <summary>
         /// returns the absolute screen position and dimensions of this window
         /// </summary>
         /// <returns></returns>
-        public Coordinate getScreenDisplayCoordinates()
+        public Coordinate GetScreenDisplayCoordinates()
         {
             return new Coordinate(m_screenLeft, m_screenTop, m_screenWidth, m_screenHeight);
         }
 
-        // activate window
 
-
-        // close window
-
-
+        /// <summary>
+        /// activates the given window
+        /// </summary>
+        public void ActivateWindow()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            m_dteWindow.Activate();
+        }
 
 
     }
