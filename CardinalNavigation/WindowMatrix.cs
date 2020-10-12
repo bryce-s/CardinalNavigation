@@ -14,12 +14,11 @@ using System.Windows;
 
 namespace CardinalNavigation
 {
-    
+
     class WindowMatrix
     {
 
         private List<IVsFrameView> m_IVsFrames;
-        private List<EnvDTE.Window> m_LinkedDTEWindows;
 
         private List<WindowControlAdapter> m_ActiveWindows;
 
@@ -41,12 +40,16 @@ namespace CardinalNavigation
             this.setActiveWindows(package);
             m_IVsFrames = IVsUIWindowFrameExtractor.getIVsWindowFramesEnumerator(package);
 
-            DTE myDTE = HelperMethods.getDTE(package);
+            DTE dteService = HelperMethods.getDTE(package);
 
             setWindowSelectionData();
 
-            m_ActiveWindows = WindowControlAdapter.getLinkedWindowControlAdapters(m_IVsFrames, m_LinkedDTEWindows, myDTE.ActiveWindow).ToList();
-            m_activeWindow = WindowControlAdapter.getActiveWindowControlAdapter(myDTE.ActiveWindow, m_ActiveWindows);
+            m_ActiveWindows = WindowControlAdapter.getLinkedWindowControlAdapters(m_IVsFrames, 
+                HelperMethods.getWindowsList(dteService.Windows),
+                dteService.ActiveWindow).
+                ToList();
+
+            m_activeWindow = WindowControlAdapter.getActiveWindowControlAdapter(dteService.ActiveWindow, m_ActiveWindows);
         }
 
         // note; need to test SystemDpi from hdpi monitors 
@@ -72,13 +75,12 @@ namespace CardinalNavigation
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             DTE myDTE = HelperMethods.getDTE(package);
-            m_LinkedDTEWindows = HelperMethods.getLinkedWindowsList(myDTE.ActiveWindow.LinkedWindowFrame.LinkedWindows);
         }
 
 
         private static int AdjacencySize(int activeAxis, int activeHeightOrWidth, int windowAxis, int windowHeightOrWidth)
         {
-            return System.Linq.Enumerable.Range(activeAxis, activeAxis+activeHeightOrWidth).Intersect(
+            return System.Linq.Enumerable.Range(activeAxis, activeAxis + activeHeightOrWidth).Intersect(
                 System.Linq.Enumerable.Range(windowAxis, windowAxis + windowHeightOrWidth)
                 ).Count();
         }
@@ -115,7 +117,7 @@ namespace CardinalNavigation
                     var lhsAdjacencySize = AdjacencySize(activeY, activeHeight, lhsY, lhsHeight);
                     var rhsAdjacencySize = AdjacencySize(activeY, activeHeight, rhsY, rhsHeight);
                     return (lhsAdjacencySize - rhsAdjacencySize);
-                    
+
                 });
             }
 
@@ -126,7 +128,7 @@ namespace CardinalNavigation
 
         // pick top enumerable.range() to find the size of ranges while tiebreaking
         private void removeWindowsNotAligned(char direction)
-        {    
+        {
             Func<WindowControlAdapter, bool> filterFunction = (win) =>
             {
                 return false;
@@ -141,7 +143,7 @@ namespace CardinalNavigation
                     var winX = win.coordinates.x;
                     var winWidth = win.coordinates.width;
                     return ((winX >= activeX && winX <= activeXWidth + activeX) ||
-                    ((winX + winWidth >= activeX) && (winX + winWidth <= activeXWidth+activeX)));
+                    ((winX + winWidth >= activeX) && (winX + winWidth <= activeXWidth + activeX)));
                 };
             }
             else if (direction == CardinalNavigationConstants.LEFT || direction == CardinalNavigationConstants.RIGHT)
@@ -206,7 +208,8 @@ namespace CardinalNavigation
         private void removeWindowsInWrongDirection(char direction)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            Func<WindowControlAdapter, bool> filterFunction = (win) => {
+            Func<WindowControlAdapter, bool> filterFunction = (win) =>
+            {
                 return false;
             };
 
@@ -218,7 +221,8 @@ namespace CardinalNavigation
                 // i should think nah, only if it's 'straight'above you. 
                 // we'd need to calc if it is, but this'd also be an issue with all other transfers.
 
-                filterFunction = (win) => {
+                filterFunction = (win) =>
+                {
 
                     ThreadHelper.ThrowIfNotOnUIThread();
                     // win.Top should be of a higher priority than m_seletedWindow.Top; since
@@ -233,7 +237,7 @@ namespace CardinalNavigation
                 {
                     ThreadHelper.ThrowIfNotOnUIThread();
                     // weird but main editor's 1 higher by default
-                    return win.coordinates.y- m_activeWindow.coordinates.y > 1;
+                    return win.coordinates.y - m_activeWindow.coordinates.y > 1;
                 };
             }
             else if (direction == CardinalNavigationConstants.LEFT)
@@ -263,10 +267,10 @@ namespace CardinalNavigation
         {
             m_ActiveWindows = m_ActiveWindows.Where((window) =>
             {
-                return window.coordinates.x == 0 &&
+                return !(window.coordinates.x == 0 &&
                 window.coordinates.y == 0 &&
                 window.coordinates.width == 0 &&
-                window.coordinates.height == 0;
+                window.coordinates.height == 0);
             }).ToList();
         }
 

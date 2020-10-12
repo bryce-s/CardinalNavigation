@@ -80,6 +80,14 @@ namespace CardinalNavigation
             object name;
             var ok = this.m_Frame.GetProperty((int)__VSFPROPID.VSFPROPID_Caption, out name);
             ErrorHandler.ThrowOnFailure(ok);
+
+            var windowName = name.ToString();
+            
+            if (windowName.EndsWith("*"))
+            {
+                return windowName.Substring(0, windowName.Length - 1);
+            }
+
             return name.ToString();
         }
 

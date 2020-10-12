@@ -29,6 +29,8 @@ namespace CardinalNavigation
             }
         }
 
+        public bool stripSaveFileAsterix = false;
+
 
         WindowControlAdapter(IVsFrameView genericWindow, Window dteWindow)
         {
@@ -135,7 +137,13 @@ namespace CardinalNavigation
                 var found = false;
                 foreach (var dteWindow in dteWindows)
                 {
-                    if (dteWindow.Caption == genericWindow.GetWindowName())
+                    var genericWindowName = genericWindow.GetWindowName();
+                    if (dteWindow.Caption == genericWindowName)
+                    {
+                        found = true;
+                    }
+                    if (dteWindow.Caption == genericWindow.GetWindowName().Substring(0,genericWindowName.Length-1) &&
+                        genericWindowName.EndsWith("*"))
                     {
                         found = true;
                     }
@@ -169,7 +177,7 @@ namespace CardinalNavigation
         public string getWindowName()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            return m_genericWindow.GetWindowName();
+            return m_genericWindow.GetWindowName(); 
         }
 
         /// <summary>

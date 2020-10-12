@@ -94,6 +94,21 @@ namespace CardinalNavigation
         }
 
         /// <summary>
+        /// returns a list to LinkedWindows
+        /// </summary>
+        /// <param name="windows"></param>
+        /// <returns></returns>
+        public static List<EnvDTE.Window> getWindowsList(EnvDTE.Windows windows)
+        {
+            List<EnvDTE.Window> windowsList = new List<Window>();
+            foreach (var window in windows)
+            {
+                windowsList.Add((Window)window);
+            }
+            return windowsList;
+        }
+
+        /// <summary>
         /// converts enumerable to list--needed due to lack of full enumerator support.
         /// </summary>
         /// <param name="windows"></param>
