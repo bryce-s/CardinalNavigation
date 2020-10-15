@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace CardinalNavigation
 {
-    class HelperMethods
+    class UtilityMethods
     {
         /// <summary>
         /// Gets the root automation model
@@ -100,6 +100,7 @@ namespace CardinalNavigation
         /// <returns></returns>
         public static List<EnvDTE.Window> getWindowsList(EnvDTE.Windows windows)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             List<EnvDTE.Window> windowsList = new List<Window>();
             foreach (var window in windows)
             {

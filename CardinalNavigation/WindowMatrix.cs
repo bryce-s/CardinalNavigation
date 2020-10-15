@@ -40,12 +40,12 @@ namespace CardinalNavigation
             this.setActiveWindows(package);
             m_IVsFrames = IVsUIWindowFrameExtractor.getIVsWindowFramesEnumerator(package);
 
-            DTE dteService = HelperMethods.getDTE(package);
+            DTE dteService = UtilityMethods.getDTE(package);
 
-            setWindowSelectionData();
+            SetWindowDivideSelectionSizes();
 
             m_ActiveWindows = WindowControlAdapter.getLinkedWindowControlAdapters(m_IVsFrames, 
-                HelperMethods.getWindowsList(dteService.Windows),
+                UtilityMethods.getWindowsList(dteService.Windows),
                 dteService.ActiveWindow).
                 ToList();
 
@@ -53,7 +53,7 @@ namespace CardinalNavigation
         }
 
         // note; need to test SystemDpi from hdpi monitors 
-        private void setWindowSelectionData()
+        private void SetWindowDivideSelectionSizes()
         {
 
             m_DeviceDpiX = DpiAwareness.SystemDpiX;
@@ -74,7 +74,7 @@ namespace CardinalNavigation
         private void setActiveWindows(AsyncPackage package)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            DTE myDTE = HelperMethods.getDTE(package);
+            DTE myDTE = UtilityMethods.getDTE(package);
         }
 
 

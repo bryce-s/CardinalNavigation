@@ -52,7 +52,7 @@ namespace CardinalNavigation
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            IVsUIShell uiShell = HelperMethods.getIVsUIShell(package);
+            IVsUIShell uiShell = UtilityMethods.getIVsUIShell(package);
             List<IVsFrameView> genericFrames = new List<IVsFrameView>();
 
 

@@ -46,7 +46,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Coordinate.cs" />
-    <Compile Include="HelperMethods.cs" />
+    <Compile Include="UtilityMethods.cs" />
     <Compile Include="NavigateDown.cs" />
     <Compile Include="NavigateLeft.cs" />
     <Compile Include="CardinalNavigationConstants.cs" />

@@ -91,7 +91,7 @@ namespace CardinalNavigation
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             List<WindowControlAdapter> allWindows = GetWindowControlAdapters(genericWindows, dteWindows).ToList();
-            List<EnvDTE.Window> parentWindows = HelperMethods.getLinkedWindowsList(activeWindow?.LinkedWindowFrame.LinkedWindows);
+            List<EnvDTE.Window> parentWindows = UtilityMethods.getLinkedWindowsList(activeWindow?.LinkedWindowFrame.LinkedWindows);
             HashSet<string> activeWindows = new HashSet<string>();
             parentWindows.ForEach((eachWindow) =>
             {
