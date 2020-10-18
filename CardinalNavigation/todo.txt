@@ -1,0 +1,7 @@
+﻿-dpi testing
+-tests
+-icons
+-move to window menu
+-establish manual test plan
+
+

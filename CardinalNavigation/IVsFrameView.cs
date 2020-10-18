@@ -24,7 +24,8 @@ namespace CardinalNavigation
         private bool m_isVisible;
 
         private IVsWindowFrame4 m_Frame2;
-        private IVsWindowFrame m_Frame;
+        private IVsWindowFrame m_Frame; 
+        public IVsWindowFrame internalFrame { get => m_Frame; }
 
         private readonly string m_FrameName;
 

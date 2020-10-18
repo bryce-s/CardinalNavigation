@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +15,10 @@ namespace CardinalNavigation
     class WindowControlAdapter
     {
         private IVsFrameView m_genericWindow;
+
         private Window m_dteWindow;
+
+        public Window internalWindow { get => m_dteWindow; }
 
         private int m_Px, m_Py, m_Pcx, m_Pcy;
         private int m_screenLeft, m_screenTop, m_screenWidth, m_screenHeight;
@@ -28,6 +32,8 @@ namespace CardinalNavigation
                 return this.GetScreenDisplayCoordinates();
             }
         }
+
+        public static object Assert { get; private set; }
 
         public bool stripSaveFileAsterix = false;
 
@@ -69,9 +75,13 @@ namespace CardinalNavigation
         /// <returns></returns>
         public static WindowControlAdapter getActiveWindowControlAdapter(EnvDTE.Window activeWindow, IEnumerable<WindowControlAdapter> windows)
         {
-            return windows.Where((eachWindow) => { 
+            if (activeWindow == null)
+            {
+                return null; 
+            }
+            return windows?.Where((eachWindow) => { 
                 Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
-                return eachWindow.getWindowName() == activeWindow.Caption;
+                return activeWindow == eachWindow.internalWindow;  
             }).First();
         }
 
@@ -90,19 +100,140 @@ namespace CardinalNavigation
             )
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+
             List<WindowControlAdapter> allWindows = GetWindowControlAdapters(genericWindows, dteWindows).ToList();
-            List<EnvDTE.Window> parentWindows = UtilityMethods.getLinkedWindowsList(activeWindow?.LinkedWindowFrame.LinkedWindows);
-            HashSet<string> activeWindows = new HashSet<string>();
-            parentWindows.ForEach((eachWindow) =>
-            {
-                Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
-                activeWindows.Add(eachWindow.Caption);
-            });
+
+            List<EnvDTE.Window> parentWindows = UtilityMethods.getLinkedWindowsList(activeWindow?.LinkedWindowFrame?.LinkedWindows);
+
             return allWindows.Where((eachActiveWindow) =>
             {
-                return activeWindows.Contains(eachActiveWindow.getWindowName());
+                var internalWindow = eachActiveWindow.internalWindow;
+                foreach (var parentWindow in parentWindows)
+                {
+                    if (parentWindow == internalWindow)
+                    {
+                        return true;
+                    }
+                }
+                return false;
             });
         }
+
+
+
+        private static bool CompareReflection(object obj1, object obj2)
+        {
+            try
+            {
+                if (obj1 == null && obj2 == null)
+                {
+                    return true;
+                }
+                if (obj1 == null || obj2 == null)
+                {
+                    return false;
+                }
+                if (!obj1.GetType().Equals(obj2.GetType()))
+                {
+                    return false;
+                }
+
+                Type type = obj1.GetType();
+                if (type.IsPrimitive || typeof(string).Equals(type))
+                {
+                    return obj1.Equals(obj2);
+                }
+                if (type.IsArray)
+                {
+                    Array first = obj1 as Array;
+                    Array second = obj2 as Array;
+                    var en = first.GetEnumerator();
+                    int i = 0;
+                    while (en.MoveNext())
+                    {
+                        if (!CompareReflection(en.Current, second.GetValue(i)))
+                            return false;
+                        i++;
+                    }
+                }
+                else
+                {
+                    foreach (PropertyInfo pi in type.GetProperties(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public))
+                    {
+                        var val = pi.GetValue(obj1);
+                        var tval = pi.GetValue(obj2);
+                        if (!CompareReflection(val, tval))
+                            return false;
+                    }
+                    foreach (FieldInfo fi in type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public))
+                    {
+                        var val = fi.GetValue(obj1);
+                        var tval = fi.GetValue(obj2);
+                        if (!CompareReflection(val, tval))
+                            return false;
+                    }
+                }
+            } catch (Exception ex)
+            {
+                if (ex is System.Reflection.TargetInvocationException || ex is System.Reflection.TargetParameterCountException)
+                {
+                    return true;
+                }
+                return false;
+            }
+            return true;
+        }
+
+        private static void CheckForDuplicateFrames(List<IVsFrameView> genericWindows, List<Window> dteWindows)
+        {
+            if (genericWindows.Count != genericWindows.DistinctBy(keySelector: (genericWindow) =>
+                {
+                    ThreadHelper.ThrowIfNotOnUIThread();
+                    return genericWindow.internalFrame;
+                }).ToList().Count ||
+                dteWindows.Count != dteWindows.DistinctBy(keySelector: (dteWindow) =>
+                {
+                    ThreadHelper.ThrowIfNotOnUIThread();
+                    return dteWindow;
+                }).ToList().Count)
+            {
+                ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
+            }
+        }
+
+        private static void CheckIntersection(List<IVsFrameView> genericWindows, List<Window> dteWindows)
+        {
+            var intersection = genericWindows.Where(genericWindow =>
+            {
+                Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+                Window genericWindowDteWindow = VsShellUtilities.GetWindowObject(genericWindow);
+                foreach (var dteWindow in dteWindows)
+                {
+                    if (genericWindowDteWindow == dteWindow)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            });
+
+            if (intersection.ToList().Count != genericWindows.Count)
+            {
+                ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
+            }
+        }
+
+        private static void SortWindowsByName(List<IVsFrameView> genericWindows, List<Window> dteWindows)
+        {
+            genericWindows.Sort((lhsWindow, rhsWindow) => String.Compare(lhsWindow.GetWindowName(), rhsWindow.GetWindowName()));
+            dteWindows.Sort((lhsWindow, rhsWindow) =>
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+                return String.Compare(lhsWindow.Caption, rhsWindow.Caption);
+            }
+            );
+        }
+
 
 
 
@@ -114,58 +245,43 @@ namespace CardinalNavigation
         /// <returns></returns>
         public static IEnumerable<WindowControlAdapter> GetWindowControlAdapters(List<IVsFrameView> genericWindows, List<Window> dteWindows)
         {
-           
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (genericWindows?.Count != dteWindows?.Count || dteWindows?.Count == 0)
             {
                 ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
             }
 
-            // check for duplicate names
-            if (genericWindows.Count != genericWindows.DistinctBy(keySelector: (genericWindow) => genericWindow.GetWindowName()).ToList().Count ||
-                dteWindows.Count != dteWindows.DistinctBy(keySelector: (dteWindow) =>
-                {
-                    ThreadHelper.ThrowIfNotOnUIThread();
-                    return dteWindow.Caption;
-                }).ToList().Count)
-            {
-                ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
-            }
+            //var programIvs = genericWindows.Where((window) => { return window.GetWindowName() == "Program.cs"; }).ToList();
+            //var programDtes = dteWindows.Where((window) => { return window.Caption == "Program.cs"; }).ToList();
 
-            var intersection = genericWindows.Where(genericWindow =>
-            {
-                Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
-                var found = false;
-                foreach (var dteWindow in dteWindows)
-                {
-                    var genericWindowName = genericWindow.GetWindowName();
-                    if (dteWindow.Caption == genericWindowName)
-                    {
-                        found = true;
-                    }
-                    if (dteWindow.Caption == genericWindow.GetWindowName().Substring(0,genericWindowName.Length-1) &&
-                        genericWindowName.EndsWith("*"))
-                    {
-                        found = true;
-                    }
-                }
-                return found;
-            });
+            //object pvar;
+            //int ok = programIvs[0].GetProperty((int)__VSFPROPID2.VSFPROPID_ParentFrame, out pvar);
 
-            if (intersection.ToList().Count != genericWindows.Count)
-            {
-                ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
-            }
+            //var dd = pvar as IVsWindowFrame;
 
-            genericWindows.Sort((lhsWindow, rhsWindow) => String.Compare(lhsWindow.GetWindowName(), rhsWindow.GetWindowName()));
-            dteWindows.Sort((lhsWindow, rhsWindow) => {
-                ThreadHelper.ThrowIfNotOnUIThread();
-                return String.Compare(lhsWindow.Caption, rhsWindow.Caption);
-            }
-            );
 
-            for (var i = 0; i < genericWindows.Count; i++)
+            //object pvar2;
+            //int ok2 = programIvs[1].GetProperty((int)__VSFPROPID2.VSFPROPID_ParentFrame, out pvar2);
+
+            //var oj = programDtes[0].Document.FullName;
+
+            //// also: frame.GetProperty(__VSFPROPID.VSFPROPID_ExtWindowObject, result)
+            //// ctype(result, envdte.window).ObjectKind
+            ////; seems like it's not possible to do this in reverse...
+            //EnvDTE.Window win = VsShellUtilities.GetWindowObject(programIvs[1]);
+            //EnvDTE.Window win2 = VsShellUtilities.GetWindowObject(programIvs[0]);
+            //var x = win.Equals(programDtes[1]);
+            //var xx = win2.Equals(programDtes[1]);
+
+            //var xz = win == programDtes[1];
+            //var zk = win2 == programDtes[1];
+
+            CheckForDuplicateFrames(genericWindows, dteWindows);
+            CheckIntersection(genericWindows, dteWindows);
+
+            foreach (var genericWindow in genericWindows)
             {
-                yield return new WindowControlAdapter(genericWindows[i], dteWindows[i]);
+                yield return new WindowControlAdapter(genericWindow, VsShellUtilities.GetWindowObject(genericWindow));
             }
         }
 
@@ -177,7 +293,7 @@ namespace CardinalNavigation
         public string getWindowName()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            return m_genericWindow.GetWindowName(); 
+            return m_genericWindow.GetWindowName();
         }
 
         /// <summary>
@@ -187,7 +303,7 @@ namespace CardinalNavigation
         /// <returns></returns>
         public bool EligibleForActiviation()
         {
-            return m_screenWidth == 0 && m_screenHeight == 0 && m_screenLeft == 0 && m_screenTop == 0; 
+            return m_screenWidth == 0 && m_screenHeight == 0 && m_screenLeft == 0 && m_screenTop == 0;
         }
 
         // return is floating

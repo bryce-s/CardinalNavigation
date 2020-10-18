@@ -303,6 +303,10 @@ namespace CardinalNavigation
         public void navigateInDirection(char direction)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+            if (m_activeWindow == null)
+            {
+                return;
+            }
             selectWindow(direction);
         }
 

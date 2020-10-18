@@ -85,10 +85,11 @@
     </VSCTCompile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\Command1.png" />
     <Content Include="Resources\NavigateDown.png" />
-    <Content Include="Resources\NavigateRight.png" />
+    <Content Include="Resources\NavigateLeft.png" />
+    <Content Include="Resources\Command1.png" />
     <Content Include="Resources\NavigateUp.png" />
+    <Content Include="Resources\NavigateRight.png" />
     <Content Include="todo.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
