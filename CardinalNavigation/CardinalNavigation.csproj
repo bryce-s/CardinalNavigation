@@ -45,7 +45,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Coordinate.cs" />
+    <Compile Include="RectCoordinate.cs" />
     <Compile Include="UtilityMethods.cs" />
     <Compile Include="NavigateDown.cs" />
     <Compile Include="NavigateLeft.cs" />

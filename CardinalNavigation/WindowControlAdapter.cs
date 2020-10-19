@@ -1,14 +1,11 @@
-﻿using EnvDTE;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+using EnvDTE;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace CardinalNavigation
 {
@@ -25,15 +22,13 @@ namespace CardinalNavigation
 
         private Window m_Parent;
 
-        public Coordinate coordinates
+        public RectCoordinate coordinates
         {
             get
             {
                 return this.GetScreenDisplayCoordinates();
             }
         }
-
-        public static object Assert { get; private set; }
 
         public bool stripSaveFileAsterix = false;
 
@@ -66,7 +61,7 @@ namespace CardinalNavigation
             m_genericWindow.GetWindowScreenRect(out m_screenLeft, out m_screenTop, out m_screenWidth, out m_screenHeight);
         }
 
-        
+
         /// <summary>
         /// returns the active window from an enumerable of WindowControlAdapters
         /// </summary>
@@ -77,11 +72,12 @@ namespace CardinalNavigation
         {
             if (activeWindow == null)
             {
-                return null; 
+                return null;
             }
-            return windows?.Where((eachWindow) => { 
+            return windows?.Where((eachWindow) =>
+            {
                 Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
-                return activeWindow == eachWindow.internalWindow;  
+                return UtilityMethods.CompareWindows(activeWindow, eachWindow.internalWindow);
             }).First();
         }
 
@@ -94,8 +90,8 @@ namespace CardinalNavigation
         /// <param name="activeWindow"></param>
         /// <returns></returns>
         public static IEnumerable<WindowControlAdapter> getLinkedWindowControlAdapters(
-            List<IVsFrameView> genericWindows, 
-            List<Window> dteWindows, 
+            List<IVsFrameView> genericWindows,
+            List<Window> dteWindows,
             EnvDTE.Window activeWindow
             )
         {
@@ -110,7 +106,7 @@ namespace CardinalNavigation
                 var internalWindow = eachActiveWindow.internalWindow;
                 foreach (var parentWindow in parentWindows)
                 {
-                    if (parentWindow == internalWindow)
+                    if (UtilityMethods.CompareWindows(parentWindow, internalWindow))
                     {
                         return true;
                     }
@@ -173,7 +169,8 @@ namespace CardinalNavigation
                             return false;
                     }
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 if (ex is System.Reflection.TargetInvocationException || ex is System.Reflection.TargetParameterCountException)
                 {
@@ -209,7 +206,7 @@ namespace CardinalNavigation
                 Window genericWindowDteWindow = VsShellUtilities.GetWindowObject(genericWindow);
                 foreach (var dteWindow in dteWindows)
                 {
-                    if (genericWindowDteWindow == dteWindow)
+                    if (UtilityMethods.CompareWindows(genericWindowDteWindow, dteWindow))
                     {
                         return true;
                     }
@@ -284,21 +281,21 @@ namespace CardinalNavigation
         // return is floating
 
         // return coordinates of parent window
-        public Coordinate GetParentWindowDisplayCoordinates()
+        public RectCoordinate GetParentWindowDisplayCoordinates()
         {
             // if window floating return dte top and left
             // else return dte parent top and left
             throw new NotImplementedException();
-            return new Coordinate(0,0,0,0);
+            return new RectCoordinate(0, 0, 0, 0);
         }
 
         /// <summary>
         /// returns the absolute screen position and dimensions of this window
         /// </summary>
         /// <returns></returns>
-        public Coordinate GetScreenDisplayCoordinates()
+        public RectCoordinate GetScreenDisplayCoordinates()
         {
-            return new Coordinate(m_screenLeft, m_screenTop, m_screenWidth, m_screenHeight);
+            return new RectCoordinate(m_screenLeft, m_screenTop, m_screenWidth, m_screenHeight);
         }
 
 

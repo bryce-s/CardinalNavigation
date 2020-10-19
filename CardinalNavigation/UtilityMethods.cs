@@ -1,12 +1,9 @@
-﻿using EnvDTE;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
+﻿
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+using EnvDTE;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace CardinalNavigation
 {
@@ -51,11 +48,11 @@ namespace CardinalNavigation
 
             return (List<EnvDTE.Window>)linkedFrame.LinkedWindows;
         }
-        
+
         private static List<EnvDTE.Window> findAllLinkedWindows(EnvDTE.Window window, List<EnvDTE.Window> linkedParentWindows)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            
+
             var top = window.Top;
             var left = window.Left;
 
@@ -114,7 +111,7 @@ namespace CardinalNavigation
         /// </summary>
         /// <param name="windows"></param>
         /// <returns></returns>
-        public static List<EnvDTE.Window> getLinkedWindowsList(EnvDTE.LinkedWindows windows) 
+        public static List<EnvDTE.Window> getLinkedWindowsList(EnvDTE.LinkedWindows windows)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -125,15 +122,44 @@ namespace CardinalNavigation
 
             List<EnvDTE.Window> linkedWindows = new List<EnvDTE.Window>();
 
-            foreach(var window in windows)
+            foreach (var window in windows)
             {
                 linkedWindows.Add((EnvDTE.Window)window);
             }
 
-            return linkedWindows; 
+            return linkedWindows;
         }
 
-        
+
+        /// <summary>
+        /// Compares lhs and rhs, with special cases where returned objects from these apis differ.
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static bool CompareWindows(EnvDTE.Window lhs, EnvDTE.Window rhs)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            if (lhs == rhs)
+            {
+                return true;
+            }
+
+            // properties window props differ when from activeWindow; if this is fixed, above if statement should work. 
+            if (lhs.Caption == rhs.Caption
+                &&
+                (lhs.Type == vsWindowType.vsWindowTypeToolWindow && rhs.Type == vsWindowType.vsWindowTypeProperties) ||
+                (lhs.Type == vsWindowType.vsWindowTypeProperties && rhs.Type == vsWindowType.vsWindowTypeToolWindow)
+                )
+            {
+                return true;
+            }
+
+            return false;
+
+        }
+
+
 
     }
 }

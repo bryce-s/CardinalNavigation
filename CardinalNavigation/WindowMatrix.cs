@@ -1,16 +1,9 @@
-﻿using EnvDTE;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Debugger;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Utilities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+using EnvDTE;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Utilities;
 
 namespace CardinalNavigation
 {
@@ -34,6 +27,10 @@ namespace CardinalNavigation
         private double m_YDivide;
 
 
+        /// <summary>
+        /// initalize windowmatrix and track windows; no filtering
+        /// </summary>
+        /// <param name="package"></param>
         public WindowMatrix(AsyncPackage package)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -44,7 +41,7 @@ namespace CardinalNavigation
 
             SetWindowDivideSelectionSizes();
 
-            m_ActiveWindows = WindowControlAdapter.getLinkedWindowControlAdapters(m_IVsFrames, 
+            m_ActiveWindows = WindowControlAdapter.getLinkedWindowControlAdapters(m_IVsFrames,
                 UtilityMethods.getWindowsList(dteService.Windows),
                 dteService.ActiveWindow).
                 ToList();
@@ -138,26 +135,30 @@ namespace CardinalNavigation
             {
                 filterFunction = (win) =>
                 {
-                    var activeX = m_activeWindow.coordinates.x;
-                    var activeXWidth = m_activeWindow.coordinates.width;
-                    var winX = win.coordinates.x;
-                    var winWidth = win.coordinates.width;
-                    return ((winX >= activeX && winX <= activeXWidth + activeX) ||
-                    ((winX + winWidth >= activeX) && (winX + winWidth <= activeXWidth + activeX)));
+
+                    var activeWinXLeft = m_activeWindow.coordinates.x;
+                    var activeWinXRight = m_activeWindow.coordinates.x + m_activeWindow.coordinates.width;
+
+                    var windowX = win.coordinates.x;
+                    var windowXRight = win.coordinates.x + win.coordinates.width;
+
+                    return activeWinXLeft <= windowXRight && windowX <= activeWinXRight;
+
                 };
             }
             else if (direction == CardinalNavigationConstants.LEFT || direction == CardinalNavigationConstants.RIGHT)
             {
                 filterFunction = (win) =>
                 {
-                    var activeY = m_activeWindow.coordinates.y;
-                    var activeYHeight = m_activeWindow.coordinates.height;
-                    var winY = m_activeWindow.coordinates.y;
-                    var winHeight = m_activeWindow.coordinates.height;
-                    return ((winY >= activeY && winY <= activeYHeight + activeY) ||
-                    (winY + winHeight >= winY) && (winY + winHeight <= activeYHeight + activeY));
-                };
+                    var activeWinYLeft = m_activeWindow.coordinates.y;
+                    var activeWinYRight = m_activeWindow.coordinates.y + m_activeWindow.coordinates.height;
 
+                    var windowY = win.coordinates.y;
+                    var windowYRight = win.coordinates.y + win.coordinates.height;
+
+                    return activeWinYLeft <= windowYRight && windowY <= activeWinYRight;
+
+                };
             }
 
             m_ActiveWindows = m_ActiveWindows.Where(filterFunction).ToList();

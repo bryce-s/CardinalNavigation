@@ -3,7 +3,7 @@
     <Metadata>
         <Identity Id="CardinalNavigation.e8041cb0-08a2-48c3-88a8-c266a498f86d" Version="0.8" Language="en-US" Publisher="Bryce Smith" />
         <DisplayName>Directional Window Navigation</DisplayName>
-        <Description xml:space="preserve">Keyboard-driven commands for directional navigation between windows.Navigate between Visual StNavigate between </Description>
+        <Description xml:space="preserve">Keyboard-driven commands for direction-based navigation between toolboxes and windows.</Description>
         <Icon>Resources\Icon.png</Icon>
         <PreviewImage>Resources\Preview.png</PreviewImage>
         <Preview>true</Preview>

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CardinalNavigation
+﻿namespace CardinalNavigation
 {
     static class CardinalNavigationConstants
     {
@@ -17,7 +11,10 @@ namespace CardinalNavigation
         public readonly static int DefaultLogicalXWindowDivide = 12;
         public readonly static int DefaultLogicalTabPaneDivide = 50;
 
-        public readonly static double DefaultLogicalSelectorScale = 1.25;
+        public readonly static double DefaultLogicalSelectorScale = 1.50;
+
+        public readonly static string DOCUMENT = "DOCUMENT";
+        public readonly static string TOOL = "TOOL";
 
     }
 }
