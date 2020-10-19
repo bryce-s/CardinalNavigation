@@ -251,31 +251,6 @@ namespace CardinalNavigation
                 ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
             }
 
-            //var programIvs = genericWindows.Where((window) => { return window.GetWindowName() == "Program.cs"; }).ToList();
-            //var programDtes = dteWindows.Where((window) => { return window.Caption == "Program.cs"; }).ToList();
-
-            //object pvar;
-            //int ok = programIvs[0].GetProperty((int)__VSFPROPID2.VSFPROPID_ParentFrame, out pvar);
-
-            //var dd = pvar as IVsWindowFrame;
-
-
-            //object pvar2;
-            //int ok2 = programIvs[1].GetProperty((int)__VSFPROPID2.VSFPROPID_ParentFrame, out pvar2);
-
-            //var oj = programDtes[0].Document.FullName;
-
-            //// also: frame.GetProperty(__VSFPROPID.VSFPROPID_ExtWindowObject, result)
-            //// ctype(result, envdte.window).ObjectKind
-            ////; seems like it's not possible to do this in reverse...
-            //EnvDTE.Window win = VsShellUtilities.GetWindowObject(programIvs[1]);
-            //EnvDTE.Window win2 = VsShellUtilities.GetWindowObject(programIvs[0]);
-            //var x = win.Equals(programDtes[1]);
-            //var xx = win2.Equals(programDtes[1]);
-
-            //var xz = win == programDtes[1];
-            //var zk = win2 == programDtes[1];
-
             CheckForDuplicateFrames(genericWindows, dteWindows);
             CheckIntersection(genericWindows, dteWindows);
 

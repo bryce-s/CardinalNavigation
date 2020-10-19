@@ -27,8 +27,5 @@ namespace CardinalNavigation
                 }
             }
         }
-
-        //public static IEnumerable<Tsource> IntersectBy<TSource, TKey>(this IEnumerable<TSource> source, Funcd)
-
     }
 }

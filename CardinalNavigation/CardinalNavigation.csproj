@@ -85,11 +85,26 @@
     </VSCTCompile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Icon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Preview.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Resources\Icon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="Resources\NavigateDown.png" />
     <Content Include="Resources\NavigateLeft.png" />
-    <Content Include="Resources\Command1.png" />
     <Content Include="Resources\NavigateUp.png" />
     <Content Include="Resources\NavigateRight.png" />
+    <Content Include="Resources\Preview.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="todo.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

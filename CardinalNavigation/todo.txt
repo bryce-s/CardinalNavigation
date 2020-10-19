@@ -2,6 +2,21 @@
 -tests
 -icons
 -move to window menu
--establish manual test plan
+-manual test plan
+-remove linq range
+- .visx needs to be release
+
+
+-extension cleanup:
+.visixmanifest file; metadata such as extension description
+-.vsct
+
+
+--groups don't do anything; they're seperated by lines in the dropdowns.
+--we see our guidCardinalNavigationPackageCmdSet is assigned to IDM_VS_MENU_TOOLS. we'll want to move it to Window
+KnownMonikersExplorer
+-> choose FSWindowsService
+175x175 for icon; 90x90 is icon. 
+save to resource folder then assign them in visixmanifest
 
 
