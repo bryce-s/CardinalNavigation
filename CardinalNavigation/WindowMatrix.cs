@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Utilities;
@@ -34,6 +35,7 @@ namespace CardinalNavigation
         public WindowMatrix(AsyncPackage package)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+
             this.setActiveWindows(package);
             m_IVsFrames = IVsUIWindowFrameExtractor.getIVsWindowFramesEnumerator(package);
 
@@ -280,20 +282,26 @@ namespace CardinalNavigation
         /// active window.
         /// </summary>
         /// <param name="direction"></param>
-        private void selectWindow(char direction)
+        private void ReduceWindows(char direction)
         {
-
-            ThreadHelper.ThrowIfNotOnUIThread();
-            removeHiddenOrTabbedWindows();
-            removeWindowsInWrongDirection(direction);
-            removeWindowsNotAdjacent(direction);
-            removeWindowsNotAligned(direction);
-            sortByLargestAdjacency(direction);
-            if (m_ActiveWindows.Count == 0)
+            try
             {
-                return;
+                ThreadHelper.ThrowIfNotOnUIThread();
+                removeHiddenOrTabbedWindows();
+                removeWindowsInWrongDirection(direction);
+                removeWindowsNotAdjacent(direction);
+                removeWindowsNotAligned(direction);
+                sortByLargestAdjacency(direction);
+                if (m_ActiveWindows.Count == 0)
+                {
+                    return;
+                }
+                m_ActiveWindows.First().ActivateWindow();
+            } catch (Exception ex)
+            {
+                MessageBox.Show($"Reducing Windows Failed. Please open an issue on github\n{ex}\n{ex.StackTrace}");
+                throw;
             }
-            m_ActiveWindows.First().ActivateWindow();
         }
 
         /// <summary>
@@ -304,11 +312,11 @@ namespace CardinalNavigation
         public void navigateInDirection(char direction)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            if (m_activeWindow == null)
+            if (m_activeWindow == null || m_ActiveWindows.Count == 0)
             {
                 return;
             }
-            selectWindow(direction);
+            ReduceWindows(direction);
         }
 
 

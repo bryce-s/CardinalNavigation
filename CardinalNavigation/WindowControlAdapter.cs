@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
+using System.Windows.Forms;
 using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
@@ -70,15 +72,27 @@ namespace CardinalNavigation
         /// <returns></returns>
         public static WindowControlAdapter getActiveWindowControlAdapter(EnvDTE.Window activeWindow, IEnumerable<WindowControlAdapter> windows)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (activeWindow == null)
             {
                 return null;
             }
-            return windows?.Where((eachWindow) =>
+            try
             {
-                Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
-                return UtilityMethods.CompareWindows(activeWindow, eachWindow.internalWindow);
-            }).First();
+                return windows?.Where((eachWindow) =>
+                {
+                    Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+                    return UtilityMethods.CompareWindows(activeWindow, eachWindow.internalWindow);
+                }).First();
+            } catch (Exception ex)
+            {
+                if (ex is System.InvalidOperationException)
+                {
+                    MessageBox.Show($"Unable to pair active windows. Please open an issue on GitHub.\nWindow:{activeWindow.Caption}\nException:{ex}\n{ex.StackTrace}");
+                }
+                throw;
+            }
+
         }
 
 
@@ -97,22 +111,29 @@ namespace CardinalNavigation
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            List<WindowControlAdapter> allWindows = GetWindowControlAdapters(genericWindows, dteWindows).ToList();
-
-            List<EnvDTE.Window> parentWindows = UtilityMethods.getLinkedWindowsList(activeWindow?.LinkedWindowFrame?.LinkedWindows);
-
-            return allWindows.Where((eachActiveWindow) =>
+            try
             {
-                var internalWindow = eachActiveWindow.internalWindow;
-                foreach (var parentWindow in parentWindows)
+                List<WindowControlAdapter> allWindows = GetWindowControlAdapters(genericWindows, dteWindows).ToList();
+
+                List<EnvDTE.Window> parentWindows = UtilityMethods.getLinkedWindowsList(activeWindow?.LinkedWindowFrame?.LinkedWindows);
+
+                return allWindows.Where((eachActiveWindow) =>
                 {
-                    if (UtilityMethods.CompareWindows(parentWindow, internalWindow))
+                    var internalWindow = eachActiveWindow.internalWindow;
+                    foreach (var parentWindow in parentWindows)
                     {
-                        return true;
+                        if (UtilityMethods.CompareWindows(parentWindow, internalWindow))
+                        {
+                            return true;
+                        }
                     }
-                }
-                return false;
-            });
+                    return false;
+                });
+            } catch (Exception ex)
+            {
+                MessageBox.Show($"Linking failed. Please open an issue on github\n{ex}\n{ex.StackTrace}");
+                throw;
+            }
         }
 
 
