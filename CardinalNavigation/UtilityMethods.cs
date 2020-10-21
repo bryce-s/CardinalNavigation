@@ -1,6 +1,8 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
+using System.Windows.Forms;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -111,21 +113,33 @@ namespace CardinalNavigation
         /// </summary>
         /// <param name="windows"></param>
         /// <returns></returns>
-        public static List<EnvDTE.Window> getLinkedWindowsList(EnvDTE.LinkedWindows windows)
+        public static List<EnvDTE.Window> getLinkedWindowsList(EnvDTE.Window parentWindow, List<Window> allWindows)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (windows == null)
+            if (parentWindow == null)
             {
+                // it also seems intuitive that we could have multiple nested windows.. but i haven't seen a 
+                // case where it happens yet.
+                MessageBox.Show("Unable to find parent for active window.\n");
                 throw new NullReferenceException();
             }
 
+            // note: not all windows linked to a parent are in parent.LinkedWindows; we'll pair
+            //       them manually.
             List<EnvDTE.Window> linkedWindows = new List<EnvDTE.Window>();
 
-            foreach (var window in windows)
+            foreach (var window in allWindows)
             {
-                linkedWindows.Add((EnvDTE.Window)window);
+                var eachWindowParentWindow = window?.LinkedWindowFrame;
+                
+                if (UtilityMethods.CompareWindows(eachWindowParentWindow, parentWindow))
+                {
+                    linkedWindows.Add(window);
+                }
             }
+
+
 
             return linkedWindows;
         }
@@ -145,8 +159,13 @@ namespace CardinalNavigation
                 return true;
             }
 
+            if (lhs == null && rhs != null || lhs != null && rhs == null)
+            {
+                return false;
+            }
+
             // properties window props differ when from activeWindow; if this is fixed, above if statement should work. 
-            if (lhs.Caption == rhs.Caption
+            if (lhs?.Caption == rhs?.Caption
                 &&
                 (lhs.Type == vsWindowType.vsWindowTypeToolWindow && rhs.Type == vsWindowType.vsWindowTypeProperties) ||
                 (lhs.Type == vsWindowType.vsWindowTypeProperties && rhs.Type == vsWindowType.vsWindowTypeToolWindow)
@@ -158,8 +177,6 @@ namespace CardinalNavigation
             return false;
 
         }
-
-
 
     }
 }

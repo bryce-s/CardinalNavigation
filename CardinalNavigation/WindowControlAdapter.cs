@@ -115,7 +115,7 @@ namespace CardinalNavigation
             {
                 List<WindowControlAdapter> allWindows = GetWindowControlAdapters(genericWindows, dteWindows).ToList();
 
-                List<EnvDTE.Window> parentWindows = UtilityMethods.getLinkedWindowsList(activeWindow?.LinkedWindowFrame?.LinkedWindows);
+                List<EnvDTE.Window> parentWindows = UtilityMethods.getLinkedWindowsList(activeWindow.LinkedWindowFrame, dteWindows);
 
                 return allWindows.Where((eachActiveWindow) =>
                 {
