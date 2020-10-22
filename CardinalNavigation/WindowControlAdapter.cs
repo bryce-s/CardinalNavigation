@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Windows.Forms;
 using EnvDTE;
@@ -84,7 +83,8 @@ namespace CardinalNavigation
                     Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
                     return UtilityMethods.CompareWindows(activeWindow, eachWindow.internalWindow);
                 }).First();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 if (ex is System.InvalidOperationException)
                 {
@@ -129,9 +129,11 @@ namespace CardinalNavigation
                     }
                     return false;
                 });
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                MessageBox.Show($"Linking failed. Please open an issue on github\n{ex}\n{ex.StackTrace}");
+                MessageBox.Show($"Linking failed. Please open an issue on github\n" +
+                    $"dte:{dteWindows?.Count.ToString()}\nwa:{genericWindows?.Count.ToString()}\n{ex}\n{ex.StackTrace}");
                 throw;
             }
         }
@@ -253,6 +255,16 @@ namespace CardinalNavigation
         }
 
 
+        private static void CheckPairedWindowsForErrors(List<IVsFrameView> genericWindows, List<Window> dteWindows)
+        {
+            if (genericWindows?.Count != dteWindows?.Count || dteWindows?.Count == 0)
+            {
+                ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
+            }
+
+            CheckForDuplicateFrames(genericWindows, dteWindows);
+            CheckIntersection(genericWindows, dteWindows);
+        }
 
 
         /// <summary>
@@ -264,13 +276,8 @@ namespace CardinalNavigation
         public static IEnumerable<WindowControlAdapter> GetWindowControlAdapters(List<IVsFrameView> genericWindows, List<Window> dteWindows)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            if (genericWindows?.Count != dteWindows?.Count || dteWindows?.Count == 0)
-            {
-                ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
-            }
 
-            CheckForDuplicateFrames(genericWindows, dteWindows);
-            CheckIntersection(genericWindows, dteWindows);
+            // instead of pairing, we'll take straight from IVsUi. It seems more inclusive.
 
             foreach (var genericWindow in genericWindows)
             {
