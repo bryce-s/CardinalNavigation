@@ -1,7 +1,6 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Windows.Forms;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
@@ -132,7 +131,7 @@ namespace CardinalNavigation
             foreach (var window in allWindows)
             {
                 var eachWindowParentWindow = window?.LinkedWindowFrame;
-                
+
                 if (UtilityMethods.CompareWindows(eachWindowParentWindow, parentWindow))
                 {
                     linkedWindows.Add(window);
@@ -167,8 +166,8 @@ namespace CardinalNavigation
             // properties window props differ when from activeWindow; if this is fixed, lhs == rhs should suffice. 
             if (lhs.Caption == rhs.Caption
                 &&
-                (lhs.Type == vsWindowType.vsWindowTypeToolWindow && rhs.Type == vsWindowType.vsWindowTypeProperties) ||
-                (lhs.Type == vsWindowType.vsWindowTypeProperties && rhs.Type == vsWindowType.vsWindowTypeToolWindow)
+                (lhs?.Type == vsWindowType.vsWindowTypeToolWindow && rhs?.Type == vsWindowType.vsWindowTypeProperties) ||
+                (lhs?.Type == vsWindowType.vsWindowTypeProperties && rhs?.Type == vsWindowType.vsWindowTypeToolWindow)
                 )
             {
                 return true;
