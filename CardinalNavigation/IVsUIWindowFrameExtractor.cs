@@ -28,15 +28,6 @@ namespace CardinalNavigation
                 ErrorHandler.ThrowOnFailure(ok);
                 if (fetched == 1)
                 {
-                    var framepos = new VSSETFRAMEPOS[1];
-                    Guid guid = new Guid();
-                    Int32 ux, uy, pcy, pcx;
-                    frame[0].GetFramePos(framepos, out guid, out ux, out uy, out pcy, out pcx);
-                    var frameType = new object();
-                    frame[0].GetProperty((int)__VSFPROPID.VSFPROPID_FrameMode, out frameType);
-                    var isVisible = frame[0].IsVisible();
-                    int onScreen;
-                    var isOnScreen = frame[0].IsOnScreen(out onScreen);
                     yield return new IVsFrameView(frame[0]);
                 }
             }
@@ -68,3 +59,4 @@ namespace CardinalNavigation
         }
     }
 }
+

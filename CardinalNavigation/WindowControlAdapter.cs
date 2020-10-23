@@ -88,7 +88,8 @@ namespace CardinalNavigation
             {
                 if (ex is System.InvalidOperationException)
                 {
-                    MessageBox.Show($"Unable to pair active windows. Please open an issue on GitHub.\nWindow:{activeWindow.Caption}\nException:{ex}\n{ex.StackTrace}");
+                    MessageBox.Show($"Unable to pair active windows. {CardinalNavigationConstants.GITHUB}\n" +
+                                    $"Window:{activeWindow.Caption}\nException:{ex}\n{ex.StackTrace}");
                 }
                 throw;
             }
@@ -131,7 +132,7 @@ namespace CardinalNavigation
                 });
             } catch (Exception ex)
             {
-                MessageBox.Show($"Linking failed. Please open an issue on github\n{ex}\n{ex.StackTrace}");
+                MessageBox.Show($"Linking failed. {CardinalNavigationConstants.GITHUB}\n{ex}\n{ex.StackTrace}");
                 throw;
             }
         }
@@ -332,3 +333,4 @@ namespace CardinalNavigation
 
     }
 }
+

@@ -92,14 +92,14 @@ namespace CardinalNavigation
             {
                 m_ActiveWindows.Sort((lhsWindow, rhsWindow) =>
                 {
-                    var activeX = m_activeWindow.coordinates.x;
-                    var activeWidth = m_activeWindow.coordinates.width;
-                    var lhsX = lhsWindow.coordinates.x;
-                    var lhsWidth = lhsWindow.coordinates.width;
-                    var rhsX = rhsWindow.coordinates.x;
-                    var rhsWidth = rhsWindow.coordinates.width;
-                    var lhsAdjacencySize = AdjacencySize(activeX, activeWidth, lhsX, lhsWidth);
-                    var rhsAdjacencySize = AdjacencySize(activeX, activeWidth, rhsX, rhsWidth);
+                    var activeWindowXCoordinate = m_activeWindow.coordinates.x;
+                    var activeWindowWidth = m_activeWindow.coordinates.width;
+                    var lhsWindowXCoordinate = lhsWindow.coordinates.x;
+                    var lhsWindowWidth = lhsWindow.coordinates.width;
+                    var rhsWindowXCoordinate = rhsWindow.coordinates.x;
+                    var rhsWindowWidth = rhsWindow.coordinates.width;
+                    var lhsAdjacencySize = AdjacencySize(activeWindowXCoordinate, activeWindowWidth, lhsWindowXCoordinate, lhsWindowWidth);
+                    var rhsAdjacencySize = AdjacencySize(activeWindowXCoordinate, activeWindowWidth, rhsWindowXCoordinate, rhsWindowWidth);
                     return (lhsAdjacencySize - rhsAdjacencySize);
                 });
             }
@@ -107,14 +107,14 @@ namespace CardinalNavigation
             {
                 m_ActiveWindows.Sort((lhsWindow, rhsWindow) =>
                 {
-                    var activeY = m_activeWindow.coordinates.y;
-                    var activeHeight = m_activeWindow.coordinates.height;
-                    var lhsY = lhsWindow.coordinates.y;
-                    var lhsHeight = lhsWindow.coordinates.height;
-                    var rhsY = rhsWindow.coordinates.y;
-                    var rhsHeight = rhsWindow.coordinates.height;
-                    var lhsAdjacencySize = AdjacencySize(activeY, activeHeight, lhsY, lhsHeight);
-                    var rhsAdjacencySize = AdjacencySize(activeY, activeHeight, rhsY, rhsHeight);
+                    var activeWindowYCoordinate = m_activeWindow.coordinates.y;
+                    var activeWindowHeight = m_activeWindow.coordinates.height;
+                    var lhsWindowYCoordinate = lhsWindow.coordinates.y;
+                    var lhsWindowHeight = lhsWindow.coordinates.height;
+                    var rhsWindowYCoordinate = rhsWindow.coordinates.y;
+                    var rhsWindowHeight = rhsWindow.coordinates.height;
+                    var lhsAdjacencySize = AdjacencySize(activeWindowYCoordinate, activeWindowHeight, lhsWindowYCoordinate, lhsWindowHeight);
+                    var rhsAdjacencySize = AdjacencySize(activeWindowYCoordinate, activeWindowHeight, rhsWindowYCoordinate, rhsWindowHeight);
                     return (lhsAdjacencySize - rhsAdjacencySize);
 
                 });
@@ -138,13 +138,13 @@ namespace CardinalNavigation
                 filterFunction = (win) =>
                 {
 
-                    var activeWinXLeft = m_activeWindow.coordinates.x;
-                    var activeWinXRight = m_activeWindow.coordinates.x + m_activeWindow.coordinates.width;
+                    var activeWindowXCoordinate = m_activeWindow.coordinates.x;
+                    var activeWindowRightCorner = m_activeWindow.coordinates.x + m_activeWindow.coordinates.width;
 
-                    var windowX = win.coordinates.x;
-                    var windowXRight = win.coordinates.x + win.coordinates.width;
+                    var windowXCoordinate = win.coordinates.x;
+                    var windowRightCorner = win.coordinates.x + win.coordinates.width;
 
-                    return activeWinXLeft <= windowXRight && windowX <= activeWinXRight;
+                    return activeWindowXCoordinate <= windowRightCorner && windowXCoordinate <= activeWindowRightCorner;
 
                 };
             }
@@ -152,13 +152,13 @@ namespace CardinalNavigation
             {
                 filterFunction = (win) =>
                 {
-                    var activeWinYLeft = m_activeWindow.coordinates.y;
-                    var activeWinYRight = m_activeWindow.coordinates.y + m_activeWindow.coordinates.height;
+                    var activeWindowYCoordinate = m_activeWindow.coordinates.y;
+                    var activeWindowYTop = m_activeWindow.coordinates.y + m_activeWindow.coordinates.height;
 
-                    var windowY = win.coordinates.y;
-                    var windowYRight = win.coordinates.y + win.coordinates.height;
+                    var windowYCoordinate = win.coordinates.y;
+                    var windowYTop = win.coordinates.y + win.coordinates.height;
 
-                    return activeWinYLeft <= windowYRight && windowY <= activeWinYRight;
+                    return activeWindowYCoordinate <= windowYTop && windowYCoordinate <= activeWindowYTop;
 
                 };
             }
@@ -297,9 +297,11 @@ namespace CardinalNavigation
                     return;
                 }
                 m_ActiveWindows.First().ActivateWindow();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                MessageBox.Show($"Reducing Windows Failed. Please open an issue on github\n{ex}\n{ex.StackTrace}");
+                MessageBox.Show($"Reducing Windows Failed. " +
+                                $"{CardinalNavigationConstants.GITHUB}\n{ex}\n{ex.StackTrace}");
                 throw;
             }
         }
