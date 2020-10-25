@@ -133,12 +133,8 @@ namespace CardinalNavigation
             }
             catch (Exception ex)
             {
-<<<<<<< HEAD
-                MessageBox.Show($"Linking failed. {CardinalNavigationConstants.GITHUB}\n{ex}\n{ex.StackTrace}");
-=======
                 MessageBox.Show($"Linking failed. Please open an issue on github\n" +
                     $"dte:{dteWindows?.Count.ToString()}\nwa:{genericWindows?.Count.ToString()}\n{ex}\n{ex.StackTrace}");
->>>>>>> 574b7c76bf23fd8d9582614abcbbd63890a7bfd4
                 throw;
             }
         }

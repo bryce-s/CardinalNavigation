@@ -208,6 +208,66 @@ namespace CardinalNavigation
 
         }
 
+        // assumes points in the wrong direction or not aligned have been removed
+        private void RemoveWindowsByClosestAdjacency(char direction)
+        {
+
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            removeWindowsInWrongDirection(direction);
+            removeWindowsNotAligned(direction);
+
+            Func<WindowControlAdapter, int> distanceFunction = (eachWindow) =>
+            {
+                return 0;
+            };
+
+            if (direction == CardinalNavigationConstants.UP)
+            {
+                distanceFunction = (eachWindow) => 
+                {
+                    return m_activeWindow.coordinates.y - (eachWindow.coordinates.y + eachWindow.coordinates.height); 
+                };
+            }
+
+            if (direction == CardinalNavigationConstants.DOWN)
+            {
+                distanceFunction = (eachWindow) =>
+                {
+                    return eachWindow.coordinates.y - (m_activeWindow.coordinates.y + m_activeWindow.coordinates.height);
+                };
+            }
+
+            if (direction == CardinalNavigationConstants.LEFT)
+            {
+                distanceFunction = (eachWindow) => 
+                {
+                    return m_activeWindow.coordinates.x - (eachWindow.coordinates.x + eachWindow.coordinates.width);
+                };
+            }
+
+            if (direction == CardinalNavigationConstants.RIGHT)
+            {
+                distanceFunction = (eachWindow) => 
+                {
+                    return eachWindow.coordinates.x - (m_activeWindow.coordinates.x + m_activeWindow.coordinates.width); 
+                };
+            }
+
+            // find min
+            var minDistance = m_ActiveWindows.Min(distanceFunction);
+            var upperDistaneBound = minDistance +
+                ((direction == CardinalNavigationConstants.UP || direction == CardinalNavigationConstants.DOWN) ? m_YDivide : m_XDivide );
+
+            // filter
+            m_ActiveWindows = m_ActiveWindows.Where((eachWindow) => 
+            {
+                var distance = distanceFunction(eachWindow);
+                return distance >= minDistance && distance <= upperDistaneBound;
+            }).ToList();
+
+        }
+
         private void removeWindowsInWrongDirection(char direction)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -287,11 +347,15 @@ namespace CardinalNavigation
             try
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
+
                 removeHiddenOrTabbedWindows();
                 removeWindowsInWrongDirection(direction);
-                removeWindowsNotAdjacent(direction);
                 removeWindowsNotAligned(direction);
+
+                RemoveWindowsByClosestAdjacency(direction);
+
                 sortByLargestAdjacency(direction);
+
                 if (m_ActiveWindows.Count == 0)
                 {
                     return;
