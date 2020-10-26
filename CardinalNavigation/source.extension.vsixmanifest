@@ -4,8 +4,10 @@
         <Identity Id="CardinalNavigation.e8041cb0-08a2-48c3-88a8-c266a498f86d" Version="0.8" Language="en-US" Publisher="Bryce Smith" />
         <DisplayName>Directional Window Navigation</DisplayName>
         <Description xml:space="preserve">Keyboard-driven commands for direction-based navigation between toolboxes and windows.</Description>
+        <License>Resources\LICENSE.txt</License>
         <Icon>Resources\Icon.png</Icon>
         <PreviewImage>Resources\Preview.png</PreviewImage>
+        <Tags>window, navigation, select, keyboard, shortcuts, direction, active, change</Tags>
         <Preview>true</Preview>
     </Metadata>
     <Installation>
