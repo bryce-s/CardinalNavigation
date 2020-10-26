@@ -1,4 +1,4 @@
-# Directional Window Selection
+# Directional Window Selection - Visual Studio Extension
 
 [![Build status](https://ci.appveyor.com/api/projects/status/auuht1u7eyasg65u?svg=true)](https://ci.appveyor.com/project/bryce-s/directionalwindownavigation)
 
