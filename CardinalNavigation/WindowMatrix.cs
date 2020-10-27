@@ -254,8 +254,17 @@ namespace CardinalNavigation
                 };
             }
 
+            var minDistance = int.MaxValue;
+
             // find min
-            var minDistance = m_ActiveWindows.Min(distanceFunction);
+            try
+            {
+                 minDistance = m_ActiveWindows.Min(distanceFunction);
+            }
+            catch (System.InvalidOperationException)
+            {
+                return;
+            }
             var upperDistaneBound = minDistance +
                 ((direction == CardinalNavigationConstants.UP || direction == CardinalNavigationConstants.DOWN) ? m_YDivide : m_XDivide );
 

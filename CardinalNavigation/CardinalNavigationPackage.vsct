@@ -95,6 +95,17 @@
       <Bitmap guid="guidImages3" href="Resources\NavigateUp.png" usedList="bmpPic4" />
     </Bitmaps>
   </Commands>
+	<KeyBindings>
+		<KeyBinding guid="guidCardinalNavigationPackageCmdSet" id="Command1Id" editor="guidVSStd97"
+					key1="h" mod1="Control Alt Shift"></KeyBinding>
+		<KeyBinding guid="guidCardinalNavigationPackageCmdSet" id="cmdidNavigateRight"
+                	key1="l" mod1="Control Alt Shift" editor="guidVSStd97"></KeyBinding>
+		<KeyBinding guid="guidCardinalNavigationPackageCmdSet" id="cmdidNavigateDown"
+				    key1="j" mod1="Control Alt Shift" editor="guidVSStd97"></KeyBinding>
+		<KeyBinding guid="guidCardinalNavigationPackageCmdSet" id="cmdidNavigateUp"
+                    key1="k" mod1="Control Alt Shift" editor="guidVSStd97"></KeyBinding>
+		
+	</KeyBindings>
 
   <Symbols>
     <!-- This is the package guid. -->
