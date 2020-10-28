@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -47,6 +48,11 @@ namespace CardinalNavigation
                 UtilityMethods.getWindowsList(dteService.Windows),
                 dteService.ActiveWindow).
                 ToList();
+
+            if (dteService.ActiveWindow == null)
+            {
+               // gracefully exit
+            }
 
             m_activeWindow = WindowControlAdapter.getActiveWindowControlAdapter(dteService.ActiveWindow, m_ActiveWindows);
         }

@@ -118,6 +118,7 @@ namespace CardinalNavigation
 
                 List<EnvDTE.Window> parentWindows = UtilityMethods.getLinkedWindowsList(activeWindow.LinkedWindowFrame, dteWindows);
 
+
                 return allWindows.Where((eachActiveWindow) =>
                 {
                     var internalWindow = eachActiveWindow.internalWindow;
