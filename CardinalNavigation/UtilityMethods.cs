@@ -164,10 +164,11 @@ namespace CardinalNavigation
             }
 
             // properties window props differ when from activeWindow; if this is fixed, lhs == rhs should suffice. 
-            if (lhs.Caption == rhs.Caption
-                &&
+            if (lhs.Caption == rhs.Caption &&
+                (
                 (lhs.Type == vsWindowType.vsWindowTypeToolWindow && rhs.Type == vsWindowType.vsWindowTypeProperties) ||
                 (lhs.Type == vsWindowType.vsWindowTypeProperties && rhs.Type == vsWindowType.vsWindowTypeToolWindow)
+                )
                 )
             {
                 return true;

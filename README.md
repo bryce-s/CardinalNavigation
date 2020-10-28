@@ -9,7 +9,7 @@ A better way to change your active window from the keyboard.
 
 Download this extension from the (VS Gallery). See the changelog for release notes.
 
-Inspired by [baskerville/bspwm](https://github.com/baskerville/bspwm).
+Inspired by [bspwm](https://github.com/baskerville/bspwm).
 
 ## Features
 
@@ -22,9 +22,11 @@ Adds four new commands to Visual Studio.
 - **Window: Navigate Up** - Select the tool or document window above the active window.
 - **Window: Navigate Down** - Select the tool or document window below the active window.
 
-In cases where multiple windows are eligible for a movement direction, the window with the largest border or overlap will be selected.
+In cases where multiple windows are eligible in a given direction, the window with the largest border or overlap will be selected.
 
-## Usage 
+The commands work both in the main Visual Studio instance and in floating windows.
+
+## Usage
 
 You can choose new shortcuts for the commands under **Tools -> Options -> Environment -> Keyboard**.
 
