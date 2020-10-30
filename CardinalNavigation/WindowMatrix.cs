@@ -393,7 +393,7 @@ namespace CardinalNavigation
         public void navigateInDirection(char direction)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            if (m_activeWindow == null || m_ActiveWindows.Count == 0)
+            if (m_activeWindow.AutoHides() || m_activeWindow == null || m_ActiveWindows.Count == 0)
             {
                 return;
             }

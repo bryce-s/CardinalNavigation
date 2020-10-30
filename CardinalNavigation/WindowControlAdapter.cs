@@ -338,6 +338,16 @@ namespace CardinalNavigation
             m_dteWindow.Activate();
         }
 
+        /// <summary>
+        /// returns whether the window autohides
+        /// </summary>
+        /// <returns></returns>
+        public bool AutoHides()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            return m_dteWindow.AutoHides;
+        }
+
 
     }
 }
