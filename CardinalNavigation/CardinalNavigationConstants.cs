@@ -16,7 +16,8 @@
         public readonly static string DOCUMENT = "DOCUMENT";
         public readonly static string TOOL = "TOOL";
 
-        public readonly static string GITHUB = "Please open an issue on Github and include a screenshot of your window configuration.";
+        public readonly static string GithubMessage = "Please open an issue on Github and include a screenshot of your window configuration.";
 
     }
 }
+

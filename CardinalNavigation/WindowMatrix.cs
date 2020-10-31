@@ -37,15 +37,15 @@ namespace CardinalNavigation
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            this.setActiveWindows(package);
-            m_IVsFrames = IVsUIWindowFrameExtractor.getIVsWindowFramesEnumerator(package);
+            this.CheckDte(package);
+            m_IVsFrames = IVsUIWindowFrameExtractor.GetIVsWindowFramesEnumerator(package);
 
-            DTE dteService = UtilityMethods.getDTE(package);
+            DTE dteService = UtilityMethods.GetDTE(package);
 
             SetWindowDivideSelectionSizes();
 
-            m_ActiveWindows = WindowControlAdapter.getLinkedWindowControlAdapters(m_IVsFrames,
-                UtilityMethods.getWindowsList(dteService.Windows),
+            m_ActiveWindows = WindowControlAdapter.GetLinkedWindowControlAdapters(m_IVsFrames,
+                UtilityMethods.GetWindowsList(dteService.Windows),
                 dteService.ActiveWindow).
                 ToList();
 
@@ -54,10 +54,14 @@ namespace CardinalNavigation
                // gracefully exit
             }
 
-            m_activeWindow = WindowControlAdapter.getActiveWindowControlAdapter(dteService.ActiveWindow, m_ActiveWindows);
+            m_activeWindow = WindowControlAdapter.GetActiveWindowControlAdapter(dteService.ActiveWindow, m_ActiveWindows);
         }
 
-        // note; need to test SystemDpi from hdpi monitors 
+        /// <summary>
+        /// infer dpi for gap detection; i.e. the case where we're trying to move up
+        /// on to a window that's tabbed, but there's another window with a smaller
+        /// border that's technically closer.
+        /// </summary>
         private void SetWindowDivideSelectionSizes()
         {
 
@@ -76,13 +80,29 @@ namespace CardinalNavigation
             var awarenessContext = DpiAwareness.ProcessDpiAwarenessContext;
         }
 
-        private void setActiveWindows(AsyncPackage package)
+
+        private void CheckDte(AsyncPackage package)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            DTE myDTE = UtilityMethods.getDTE(package);
+            try
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+                DTE myDTE = UtilityMethods.GetDTE(package);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Unable to get DTE {CardinalNavigationConstants.GithubMessage}{ex.StackTrace}");
+            }
         }
 
 
+        /// <summary>
+        /// Compute the length of these two window's adjacency
+        /// </summary>
+        /// <param name="activeAxis"></param>
+        /// <param name="activeHeightOrWidth"></param>
+        /// <param name="windowAxis"></param>
+        /// <param name="windowHeightOrWidth"></param>
+        /// <returns></returns>
         private static int AdjacencySize(int activeAxis, int activeHeightOrWidth, int windowAxis, int windowHeightOrWidth)
         {
             return System.Linq.Enumerable.Range(activeAxis, activeAxis + activeHeightOrWidth).Intersect(
@@ -90,7 +110,12 @@ namespace CardinalNavigation
                 ).Count();
         }
 
-        private void sortByLargestAdjacency(char direction)
+        #region Filter Windows
+        /// <summary>
+        /// sort active windows by adjacency size
+        /// </summary>
+        /// <param name="direction"></param>
+        private void SortByLargestAdjacency(char direction)
         {
             // we don't want max exactly..
             // don't use Abs; c# sort compares based on numeric result 
@@ -131,8 +156,11 @@ namespace CardinalNavigation
         }
 
 
-        // pick top enumerable.range() to find the size of ranges while tiebreaking
-        private void removeWindowsNotAligned(char direction)
+        /// <summary>
+        /// remove windows that are out of alignment with the active window, regardless of distance
+        /// </summary>
+        /// <param name="direction"></param>
+        private void RemoveWindowsNotAligned(char direction)
         {
             Func<WindowControlAdapter, bool> filterFunction = (win) =>
             {
@@ -173,9 +201,12 @@ namespace CardinalNavigation
 
         }
 
-        private void removeWindowsNotAdjacent(char direction)
+        /// <summary>
+        /// remove windows that aren't adjacent to the active window
+        /// </summary>
+        /// <param name="direction"></param>
+        private void RemoveWindowsNotAdjacent(char direction)
         {
-            //todo: should not need abs
             Func<WindowControlAdapter, bool> filterFunction = (win) =>
             {
                 return false;
@@ -214,14 +245,17 @@ namespace CardinalNavigation
 
         }
 
-        // assumes points in the wrong direction or not aligned have been removed
+        /// <summary>
+        /// Remove all but the closest window + computed DPI divide (tie inclusive)
+        /// </summary>
+        /// <param name="direction"></param>
         private void RemoveWindowsByClosestAdjacency(char direction)
         {
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            removeWindowsInWrongDirection(direction);
-            removeWindowsNotAligned(direction);
+            RemoveWindowsInWrongDirection(direction);
+            RemoveWindowsNotAligned(direction);
 
             Func<WindowControlAdapter, int> distanceFunction = (eachWindow) =>
             {
@@ -283,29 +317,25 @@ namespace CardinalNavigation
 
         }
 
-        private void removeWindowsInWrongDirection(char direction)
+        /// <summary>
+        /// removes windows not found along the axis we're looking at
+        /// </summary>
+        /// <param name="direction"></param>
+        private void RemoveWindowsInWrongDirection(char direction)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+
             Func<WindowControlAdapter, bool> filterFunction = (win) =>
             {
                 return false;
             };
 
-            // we need to eliminate docked, invis wins before this point.
 
             if (direction == CardinalNavigationConstants.UP)
             {
-                // do we want to jump 'across' the screen or no?
-                // i should think nah, only if it's 'straight'above you. 
-                // we'd need to calc if it is, but this'd also be an issue with all other transfers.
-
                 filterFunction = (win) =>
                 {
-
                     ThreadHelper.ThrowIfNotOnUIThread();
-                    // win.Top should be of a higher priority than m_seletedWindow.Top; since
-                    // closer to top of IDE is lower no, the 'higher priority' here is 
-                    // a lower number
                     return win.coordinates.y < m_activeWindow.coordinates.y;
                 };
             }
@@ -335,13 +365,13 @@ namespace CardinalNavigation
                 };
             }
 
+
             m_ActiveWindows = m_ActiveWindows.Where(filterFunction)
                                              .ToList();
-            // can't activate here
-            // need to find adjacent windows
+
         }
 
-        private void removeHiddenOrTabbedWindows()
+        private void RemoveHiddenOrTabbedWindows()
         {
             m_ActiveWindows = m_ActiveWindows.Where((window) =>
             {
@@ -352,24 +382,26 @@ namespace CardinalNavigation
             }).ToList();
         }
 
+        #endregion
+
         /// <summary>
         /// Remove all points in the wrong direction, or that aren't bordering out
         /// active window.
         /// </summary>
         /// <param name="direction"></param>
-        private void ReduceWindows(char direction)
+        private void ReduceWindowsAndSelectActive(char direction)
         {
             try
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
-                removeHiddenOrTabbedWindows();
-                removeWindowsInWrongDirection(direction);
-                removeWindowsNotAligned(direction);
+                RemoveHiddenOrTabbedWindows();
+                RemoveWindowsInWrongDirection(direction);
+                RemoveWindowsNotAligned(direction);
 
                 RemoveWindowsByClosestAdjacency(direction);
 
-                sortByLargestAdjacency(direction);
+                SortByLargestAdjacency(direction);
 
                 if (m_ActiveWindows.Count == 0)
                 {
@@ -380,7 +412,7 @@ namespace CardinalNavigation
             catch (Exception ex)
             {
                 MessageBox.Show($"Reducing Windows Failed. " +
-                                $"{CardinalNavigationConstants.GITHUB}\n{ex}\n{ex.StackTrace}");
+                                $"{CardinalNavigationConstants.GithubMessage}\n{ex}\n{ex.StackTrace}");
                 throw;
             }
         }
@@ -390,14 +422,14 @@ namespace CardinalNavigation
         /// or do nothing if none is found.
         /// </summary>
         /// <param name="direction"></param>
-        public void navigateInDirection(char direction)
+        public void NavigateInDirection(char direction)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             if (m_activeWindow.AutoHides() || m_activeWindow == null || m_ActiveWindows.Count == 0)
             {
                 return;
             }
-            ReduceWindows(direction);
+            ReduceWindowsAndSelectActive(direction);
         }
 
 
@@ -405,7 +437,7 @@ namespace CardinalNavigation
         /// activate the window passed as a para
         /// </summary>
         /// <param name="window"></param>
-        private void activateWindow(EnvDTE.Window window)
+        private void ActivateWindow(EnvDTE.Window window)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             window.Activate();

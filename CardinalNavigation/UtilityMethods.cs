@@ -11,11 +11,11 @@ namespace CardinalNavigation
     class UtilityMethods
     {
         /// <summary>
-        /// Gets the root automation model
+        /// root automation model
         /// </summary>
         /// <param name="package"></param>
         /// <returns></returns>
-        public static DTE getDTE(AsyncPackage package)
+        public static DTE GetDTE(AsyncPackage package)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             System.IServiceProvider serviceProvider = package as System.IServiceProvider;
@@ -28,7 +28,7 @@ namespace CardinalNavigation
         /// </summary>
         /// <param name="package"></param>
         /// <returns></returns>
-        public static IVsUIShell getIVsUIShell(AsyncPackage package)
+        public static IVsUIShell GetIVsUIShell(AsyncPackage package)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             System.IServiceProvider serviceProvider = package as System.IServiceProvider;
@@ -36,7 +36,7 @@ namespace CardinalNavigation
         }
 
 
-        private static List<EnvDTE.Window> getLinkedParentWindows(EnvDTE.Window window)
+        private static List<EnvDTE.Window> GetLinkedParentWindows(EnvDTE.Window window)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -50,7 +50,8 @@ namespace CardinalNavigation
             return (List<EnvDTE.Window>)linkedFrame.LinkedWindows;
         }
 
-        private static List<EnvDTE.Window> findAllLinkedWindows(EnvDTE.Window window, List<EnvDTE.Window> linkedParentWindows)
+
+        private static List<EnvDTE.Window> FindAllLinkedWindows(EnvDTE.Window window, List<EnvDTE.Window> linkedParentWindows)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -69,10 +70,10 @@ namespace CardinalNavigation
         /// </summary>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static bool windowIsLinked(EnvDTE.Window window)
+        public static bool WindowIsLinked(EnvDTE.Window window)
         {
-            var linkedParentWindows = getLinkedParentWindows(window);
-            return findAllLinkedWindows(window, linkedParentWindows)?.Count > 0;
+            var linkedParentWindows = GetLinkedParentWindows(window);
+            return FindAllLinkedWindows(window, linkedParentWindows)?.Count > 0;
         }
 
         /// <summary>
@@ -81,14 +82,14 @@ namespace CardinalNavigation
         /// </summary>
         /// <param name="window"></param>
         /// <returns></returns>
-        public static EnvDTE.Window getMostRecentlyUsedLinkedWindow(EnvDTE.Window window)
+        public static EnvDTE.Window GetMostRecentlyUsedLinkedWindow(EnvDTE.Window window)
         {
-            var linkedParentWindows = getLinkedParentWindows(window);
+            var linkedParentWindows = GetLinkedParentWindows(window);
             if (linkedParentWindows?.Count <= 1)
             {
                 return window;
             }
-            return findAllLinkedWindows(window, linkedParentWindows)?[0];
+            return FindAllLinkedWindows(window, linkedParentWindows)?[0];
         }
 
         /// <summary>
@@ -96,7 +97,7 @@ namespace CardinalNavigation
         /// </summary>
         /// <param name="windows"></param>
         /// <returns></returns>
-        public static List<EnvDTE.Window> getWindowsList(EnvDTE.Windows windows)
+        public static List<EnvDTE.Window> GetWindowsList(EnvDTE.Windows windows)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             List<EnvDTE.Window> windowsList = new List<Window>();
@@ -112,7 +113,7 @@ namespace CardinalNavigation
         /// </summary>
         /// <param name="windows"></param>
         /// <returns></returns>
-        public static List<EnvDTE.Window> getLinkedWindowsList(EnvDTE.Window parentWindow, List<Window> allWindows)
+        public static List<EnvDTE.Window> GetLinkedWindowsList(EnvDTE.Window parentWindow, List<Window> allWindows)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -145,7 +146,10 @@ namespace CardinalNavigation
 
 
         /// <summary>
-        /// Compares lhs and rhs, with special cases where returned objects from these apis differ.
+        /// special comparison function for EnvDTE.Window
+        /// this is needed because some windows (e.g. properties) seem not to
+        /// compare against eachother correctly from the IVsShell interface and
+        /// the DTE.
         /// </summary>
         /// <param name="lhs"></param>
         /// <param name="rhs"></param>

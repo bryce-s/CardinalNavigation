@@ -12,6 +12,7 @@ namespace CardinalNavigation
 {
     class WindowControlAdapter
     {
+
         private IVsFrameView m_genericWindow;
 
         private Window m_dteWindow;
@@ -33,7 +34,11 @@ namespace CardinalNavigation
 
         public bool stripSaveFileAsterix = false;
 
-
+        /// <summary>
+        /// constructor binds an IVsWindowFrame to a Dte.Window
+        /// </summary>
+        /// <param name="genericWindow"></param>
+        /// <param name="dteWindow"></param>
         WindowControlAdapter(IVsFrameView genericWindow, Window dteWindow)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
@@ -56,6 +61,9 @@ namespace CardinalNavigation
 
         }
 
+        /// <summary>
+        /// Returns the dimensions of a window that's being rendered on the screen.
+        /// </summary>
         private void GetWindowScreenCoordinates()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -69,7 +77,7 @@ namespace CardinalNavigation
         /// <param name="activeWindow"></param>
         /// <param name="windows"></param>
         /// <returns></returns>
-        public static WindowControlAdapter getActiveWindowControlAdapter(EnvDTE.Window activeWindow, IEnumerable<WindowControlAdapter> windows)
+        public static WindowControlAdapter GetActiveWindowControlAdapter(EnvDTE.Window activeWindow, IEnumerable<WindowControlAdapter> windows)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             if (activeWindow == null)
@@ -88,7 +96,7 @@ namespace CardinalNavigation
             {
                 if (ex is System.InvalidOperationException)
                 {
-                    MessageBox.Show($"Unable to pair active windows. {CardinalNavigationConstants.GITHUB}\n" +
+                    MessageBox.Show($"Unable to pair active windows. {CardinalNavigationConstants.GithubMessage}\n" +
                                     $"Window:{activeWindow.Caption}\nException:{ex}\n{ex.StackTrace}");
                 }
                 throw;
@@ -104,7 +112,7 @@ namespace CardinalNavigation
         /// <param name="dteWindows"></param>
         /// <param name="activeWindow"></param>
         /// <returns></returns>
-        public static IEnumerable<WindowControlAdapter> getLinkedWindowControlAdapters(
+        public static IEnumerable<WindowControlAdapter> GetLinkedWindowControlAdapters(
             List<IVsFrameView> genericWindows,
             List<Window> dteWindows,
             EnvDTE.Window activeWindow
@@ -116,8 +124,7 @@ namespace CardinalNavigation
             {
                 List<WindowControlAdapter> allWindows = GetWindowControlAdapters(genericWindows, dteWindows).ToList();
 
-                List<EnvDTE.Window> parentWindows = UtilityMethods.getLinkedWindowsList(activeWindow.LinkedWindowFrame, dteWindows);
-
+                List<EnvDTE.Window> parentWindows = UtilityMethods.GetLinkedWindowsList(activeWindow.LinkedWindowFrame, dteWindows);
 
                 return allWindows.Where((eachActiveWindow) =>
                 {
@@ -139,8 +146,6 @@ namespace CardinalNavigation
                 throw;
             }
         }
-
-
 
         private static bool CompareReflection(object obj1, object obj2)
         {
@@ -206,13 +211,19 @@ namespace CardinalNavigation
             return true;
         }
 
+        /// <summary>
+        /// Checks for duplicate window frames from either API.
+        /// </summary>
+        /// <param name="genericWindows"></param>
+        /// <param name="dteWindows"></param>
         private static void CheckForDuplicateFrames(List<IVsFrameView> genericWindows, List<Window> dteWindows)
         {
             if (genericWindows.Count != genericWindows.DistinctBy(keySelector: (genericWindow) =>
                 {
                     ThreadHelper.ThrowIfNotOnUIThread();
                     return genericWindow.internalFrame;
-                }).ToList().Count ||
+                }).ToList().Count 
+                ||
                 dteWindows.Count != dteWindows.DistinctBy(keySelector: (dteWindow) =>
                 {
                     ThreadHelper.ThrowIfNotOnUIThread();
@@ -223,6 +234,11 @@ namespace CardinalNavigation
             }
         }
 
+        /// <summary>
+        /// checks that the intersection of the windows from our two APIs is equal.
+        /// </summary>
+        /// <param name="genericWindows"></param>
+        /// <param name="dteWindows"></param>
         private static void CheckIntersection(List<IVsFrameView> genericWindows, List<Window> dteWindows)
         {
             var intersection = genericWindows.Where(genericWindow =>
@@ -292,7 +308,7 @@ namespace CardinalNavigation
         /// returns the name of this window.
         /// </summary>
         /// <returns></returns>
-        public string getWindowName()
+        public string GetWindowName()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             return m_genericWindow.GetWindowName();

@@ -10,21 +10,27 @@ using System.Threading.Tasks;
 namespace CardinalNavigation
 {
     /// <summary>
-    ///  container needed to allocate both toolbox and document
-    ///  frames.
+    /// implements various IVsWindowFrame interfaces for enhanced window functionality
+    /// relative to the DTE.
     /// </summary>
     class IVsFrameView : IVsWindowFrame4, IVsWindowFrame, IVsWindowFrameNotify
     {
 
         private int m_Px, m_Py, m_Pcx, m_Pcy;
         private int m_screenLeft, m_screenTop, m_screenWidth, m_screenHeight;
+
         private VSSETFRAMEPOS[] m_FramePos;
+
         private Guid m_GuidRelativeTo;
 
         private bool m_isVisible;
 
         private IVsWindowFrame4 m_Frame2;
-        private IVsWindowFrame m_Frame; 
+        private IVsWindowFrame m_Frame;
+
+        /// <summary>
+        /// getter for base internal frame; useful for equality checks
+        /// </summary>
         public IVsWindowFrame internalFrame { get => m_Frame; }
 
         private readonly string m_FrameName;
@@ -41,16 +47,16 @@ namespace CardinalNavigation
             m_Frame = frame;
             m_Frame2 = (IVsWindowFrame4)frame;
 
-            m_isVisible = this.isTabbedAndInvisible();
+            m_isVisible = this.IsTabbedAndInvisible();
 
             m_FrameName = m_Frame.ToString();
             m_FramePos = new VSSETFRAMEPOS[1];
-            
+
             m_Frame2.GetWindowScreenRect(out m_screenLeft, out m_screenTop, out m_screenWidth, out m_screenHeight);
             this.GetFramePos(m_FramePos, out m_GuidRelativeTo, out m_Px, out m_Py, out m_Pcx, out m_Pcy);
         }
 
-        private void getIVsWindowFrame4()
+        private void GetIVsWindowFrame4()
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
             IntPtr pObj;
@@ -63,12 +69,12 @@ namespace CardinalNavigation
         /// returns true if this window is docked and tabbed out of view.
         /// </summary>
         /// <returns></returns>
-        public bool isTabbedAndInvisible()
+        public bool IsTabbedAndInvisible()
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
             int pfOnScreen = 0;
             ErrorHandler.ThrowOnFailure(this.IsOnScreen(out pfOnScreen));
-            return pfOnScreen == 0;  
+            return pfOnScreen == 0;
         }
 
         /// <summary>
@@ -83,7 +89,7 @@ namespace CardinalNavigation
             ErrorHandler.ThrowOnFailure(ok);
 
             var windowName = name.ToString();
-            
+
             if (windowName.EndsWith("*"))
             {
                 return windowName.Substring(0, windowName.Length - 1);
@@ -119,9 +125,8 @@ namespace CardinalNavigation
         public int CloseFrame(uint grfSaveOptions)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
-            return m_Frame.CloseFrame(grfSaveOptions); 
+            return m_Frame.CloseFrame(grfSaveOptions);
         }
-
 
         public int SetFramePos(VSSETFRAMEPOS dwSFP, ref Guid rguidRelativeTo, int x, int y, int cx, int cy)
         {
@@ -191,6 +196,14 @@ namespace CardinalNavigation
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// returns what's actually being rendered on the screen
+        /// </summary>
+        /// <param name="screenLeft">x coordinate</param>
+        /// <param name="screenTop">y coordinate</param>
+        /// <param name="screenWidth">width; top left corner is (x + width)</param>
+        /// <param name="screenHeight">height; bottom left corner is (y + height)</param>
+        /// <returns>was the ScreenRect sucessfully retrieved?></returns>
         public bool GetWindowScreenRect(out int screenLeft, out int screenTop, out int screenWidth, out int screenHeight)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();

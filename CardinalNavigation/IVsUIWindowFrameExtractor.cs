@@ -13,9 +13,12 @@ namespace CardinalNavigation
 {
     class IVsUIWindowFrameExtractor
     {
-
-
-        private static IEnumerable<IVsFrameView> extractFrames(IEnumWindowFrames frames)
+        /// <summary>
+        /// yield tool or document windows to an iterator
+        /// </summary>
+        /// <param name="frames">this set of tool or document windows</param>
+        /// <returns></returns>
+        private static IEnumerable<IVsFrameView> ExtractFrames(IEnumWindowFrames frames)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -39,21 +42,21 @@ namespace CardinalNavigation
         /// </summary>
         /// <param name="package"></param>
         /// <returns></returns>
-        public static List<IVsFrameView>getIVsWindowFramesEnumerator(AsyncPackage package)
+        public static List<IVsFrameView> GetIVsWindowFramesEnumerator(AsyncPackage package)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            IVsUIShell uiShell = UtilityMethods.getIVsUIShell(package);
+            IVsUIShell uiShell = UtilityMethods.GetIVsUIShell(package);
             List<IVsFrameView> genericFrames = new List<IVsFrameView>();
 
 
             IEnumWindowFrames toolFramesEnum;
             ErrorHandler.ThrowOnFailure(uiShell.GetToolWindowEnum(out toolFramesEnum));
-            genericFrames = extractFrames(toolFramesEnum).ToList();
+            genericFrames = ExtractFrames(toolFramesEnum).ToList();
 
             IEnumWindowFrames documentFramesEnum;
             ErrorHandler.ThrowOnFailure(uiShell.GetDocumentWindowEnum(out documentFramesEnum));
-            genericFrames.AddRange(extractFrames(documentFramesEnum).ToList());
+            genericFrames.AddRange(ExtractFrames(documentFramesEnum).ToList());
 
             return genericFrames;
         }
