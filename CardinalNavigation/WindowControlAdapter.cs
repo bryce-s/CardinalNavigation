@@ -241,6 +241,7 @@ namespace CardinalNavigation
         /// <param name="dteWindows"></param>
         private static void CheckIntersection(List<IVsFrameView> genericWindows, List<Window> dteWindows)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             var intersection = genericWindows.Where(genericWindow =>
             {
                 Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
@@ -275,6 +276,8 @@ namespace CardinalNavigation
 
         private static void CheckPairedWindowsForErrors(List<IVsFrameView> genericWindows, List<Window> dteWindows)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (genericWindows?.Count != dteWindows?.Count || dteWindows?.Count == 0)
             {
                 ErrorHandler.ThrowOnFailure(VSConstants.E_FAIL);
@@ -332,7 +335,6 @@ namespace CardinalNavigation
             // if window floating return dte top and left
             // else return dte parent top and left
             throw new NotImplementedException();
-            return new RectCoordinate(0, 0, 0, 0);
         }
 
         /// <summary>

@@ -72,6 +72,7 @@ namespace CardinalNavigation
         /// <returns></returns>
         public static bool WindowIsLinked(EnvDTE.Window window)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             var linkedParentWindows = GetLinkedParentWindows(window);
             return FindAllLinkedWindows(window, linkedParentWindows)?.Count > 0;
         }
@@ -84,6 +85,7 @@ namespace CardinalNavigation
         /// <returns></returns>
         public static EnvDTE.Window GetMostRecentlyUsedLinkedWindow(EnvDTE.Window window)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             var linkedParentWindows = GetLinkedParentWindows(window);
             if (linkedParentWindows?.Count <= 1)
             {
