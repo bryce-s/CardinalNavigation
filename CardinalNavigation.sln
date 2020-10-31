@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectionalWindowSelection", "CardinalNavigation\DirectionalWindowSelection.csproj", "{7FA49E1D-01C4-4E48-A737-B7F03EAA6829}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardinalNavigation", "CardinalNavigation\CardinalNavigation.csproj", "{7FA49E1D-01C4-4E48-A737-B7F03EAA6829}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
