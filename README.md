@@ -1,12 +1,13 @@
 # Directional Window Selection - Visual Studio Extension
 
 [![Build status](https://ci.appveyor.com/api/projects/status/auuht1u7eyasg65u?svg=true)](https://ci.appveyor.com/project/bryce-s/directionalwindownavigation)
+<img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-success.svg" />
+  <img alt="Version" src="https://img.shields.io/badge/version-1.0-success.svg?cacheSeconds=2592000" />
+
 
 A better way to change your active window from the keyboard.
 
-
-
-Download this extension from the (VS Gallery). See the changelog for release notes.
+Download this extension from the (VS Gallery). See the [changelog](CHANGELOG.md) for release notes.
 
 Inspired by [bspwm](https://github.com/baskerville/bspwm).
 
