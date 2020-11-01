@@ -111,6 +111,7 @@ namespace CardinalNavigation
         }
 
         #region Filter Windows
+
         /// <summary>
         /// sort active windows by adjacency size
         /// </summary>
