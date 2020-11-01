@@ -7,9 +7,9 @@
 
 A better way to change your active window from the keyboard.
 
-Download this extension from the [Visual Studio Extension Marketplace](https://marketplace.visualstudio.com/items?itemName=BryceSmith.CardinalNavigation&ssr=false). See the [changelog](CHANGELOG.md) for release notes.
+Download this extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=BryceSmith.CardinalNavigation&ssr=false). 
 
-Inspired by [bspwm](https://github.com/baskerville/bspwm).
+See the [changelog](CHANGELOG.md) for release notes. Inspired by [bspwm](https://github.com/baskerville/bspwm).
 
 ## Features
 
