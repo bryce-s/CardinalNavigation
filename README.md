@@ -1,4 +1,4 @@
-# Directional Window Selection - Visual Studio Extension
+# Cardinal Navigation - A Visual Studio Extension 
 
 [![Build status](https://ci.appveyor.com/api/projects/status/auuht1u7eyasg65u?svg=true)](https://ci.appveyor.com/project/bryce-s/directionalwindownavigation)
 <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-success.svg" />
@@ -15,7 +15,7 @@ Inspired by [bspwm](https://github.com/baskerville/bspwm).
 
 ![](Media/demonstration.gif "demonstration")
 
-Adds four new commands to Visual Studio:
+Adds four new commands to Visual Studio, each representing navigation in a cardinal direction:
 
 - **Window: Navigate Left** - Select the tool or document window to the left of the active window.
 - **Window: Navigate Right** - Select the tool or document window to the right of the active window.
